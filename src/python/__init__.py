@@ -17,6 +17,8 @@ depart from the GPL licensing requirements, please contact the author and apply
 for a commercial license.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import traceback
 
@@ -147,7 +149,7 @@ class BisonParser(object):
 
         self.verbose = kw.get('verbose', 0)
 
-        if kw.has_key('keepfiles'):
+        if 'keepfiles' in kw:
             self.keepfiles = kw['keepfiles']
 
         # if engine lib name not declared, invent ont
@@ -173,12 +175,12 @@ class BisonParser(object):
         if handler:
             if self.verbose:
                 try:
-                    hdlrline = handler.func_code.co_firstlineno
+                    hdlrline = handler.__code__.co_firstlineno
                 except:
-                    hdlrline = handler.__init__.func_code.co_firstlineno
+                    hdlrline = handler.__init__.__code__.co_firstlineno
 
-                print 'BisonParser._handle: call handler at line %s with: %s' \
-                      % (hdlrline, str((targetname, option, names, values)))
+                print('BisonParser._handle: call handler at line %s with: %s' \
+                      % (hdlrline, str((targetname, option, names, values))))
 
             self.last = handler(target=targetname, option=option, names=names,
                                 values=values)
@@ -188,7 +190,7 @@ class BisonParser(object):
             #          % (targetname, repr(self.last))
         else:
             if self.verbose:
-                print 'no handler for %s, using default' % targetname
+                print('no handler for %s, using default' % targetname)
 
             cls = self.default_node_class
             self.last = cls(target=targetname, option=option, names=names,
@@ -213,7 +215,7 @@ class BisonParser(object):
             - debug - enables garrulous parser debugging output, default 0
         """
         if self.verbose:
-            print 'Parser.run: calling engine'
+            print('Parser.run: calling engine')
 
         # grab keywords
         fileobj = kw.get('file', self.file)
@@ -242,7 +244,7 @@ class BisonParser(object):
             self.read = read
 
         if self.verbose and self.file.closed:
-            print 'Parser.run(): self.file', self.file, 'is closed'
+            print('Parser.run(): self.file', self.file, 'is closed')
 
         error_count = 0
 
@@ -263,23 +265,23 @@ class BisonParser(object):
                 self.report_last_error(filename, e)
 
             if self.verbose:
-                print 'Parser.run: back from engine'
+                print('Parser.run: back from engine')
 
             if hasattr(self, 'hook_run'):
                 self.last = self.hook_run(filename, self.last)
 
             if self.verbose and not self.file.closed:
-                print 'last:', self.last
+                print('last:', self.last)
 
         if self.verbose:
-            print 'last:', self.last
+            print('last:', self.last)
 
         # restore old values
         self.file = oldfile
         self.read = oldread
 
         if self.verbose:
-            print '------------------ result=', self.last
+            print('------------------ result=', self.last)
 
         # TODO: return last result (see while loop):
         # return self.last[:-1]
@@ -296,12 +298,12 @@ class BisonParser(object):
         """
         # default to stdin
         if self.verbose:
-            print 'Parser.read: want %s bytes' % nbytes
+            print('Parser.read: want %s bytes' % nbytes)
 
         bytes = self.file.readline(nbytes)
 
         if self.verbose:
-            print 'Parser.read: got %s bytes' % len(bytes)
+            print('Parser.read: got %s bytes' % len(bytes))
 
         return bytes
 
@@ -342,7 +344,7 @@ class BisonParser(object):
         if self.verbose:
             traceback.print_exc()
 
-        print 'ERROR:', error
+        print('ERROR:', error)
 
     def report_syntax_error(self, msg, yytext, first_line, first_col,
             last_line, last_col):

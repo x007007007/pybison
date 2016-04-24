@@ -2,27 +2,29 @@
 Builds bison python module
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 version = '0.1'
 
 from distutils.core import setup
 from distutils.extension import Extension
-from Pyrex.Distutils import build_ext
+from Cython.Distutils import build_ext
 
 import sys
 
 if sys.platform == 'win32':
-    print 'No windows support at this time. PyBison won\'t work for you :('
+    print('No windows support at this time. PyBison won\'t work for you :(')
     libs = []
     extra_link_args = []
     bison2pyscript = 'utils/bison2py.py'
     bisondynlibModule = 'src/c/bisondynlib-win32.c'
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux':
     libs = ['dl']
     extra_link_args = []
     bison2pyscript = 'utils/bison2py'
     bisondynlibModule = 'src/c/bisondynlib-linux.c'
 else:
-    print 'Sorry, your platform is presently unsupported.'
+    print('Sorry, your platform is presently unsupported.')
     sys.exit(1)
 
 setup(

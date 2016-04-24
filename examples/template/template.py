@@ -11,6 +11,8 @@ You can do much worse than to copy this file
 somewhere, and tinker away to your heart's content.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 
 from bison import BisonParser, BisonNode
@@ -105,7 +107,7 @@ class Parser(BisonParser):
         :
         | someTarget WORD
         """
-        print "on_someTarget: %s %s" % (option, repr(values))
+        print("on_someTarget: %s %s" % (option, repr(values)))
         node = someTarget_Node(target=target,
                                option=option,
                                names=names,
@@ -154,12 +156,12 @@ extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
 # --------------------------------------------------
 
 def usage():
-    print "%s: PyBison template parser" % sys.argv[0]
-    print "Usage: %s [-k] [-v] [-d] [filename]" % sys.argv[0]
-    print "  -k       Keep temporary files used in building parse engine lib"
-    print "  -v       Enable verbose messages while parser is running"
-    print "  -d       Enable garrulous debug messages from parser engine"
-    print "  filename path of a file to parse, defaults to stdin"
+    print("%s: PyBison template parser" % sys.argv[0])
+    print("Usage: %s [-k] [-v] [-d] [filename]" % sys.argv[0])
+    print("  -k       Keep temporary files used in building parse engine lib")
+    print("  -v       Enable verbose messages while parser is running")
+    print("  -d       Enable garrulous debug messages from parser engine")
+    print("  filename path of a file to parse, defaults to stdin")
 
 def main(*args):
     """
@@ -192,7 +194,7 @@ def main(*args):
     p = Parser(verbose=verbose, keepfiles=keepfiles)
 
     if filename == None:
-        print "(Reading from standard input - please type stuff)"
+        print("(Reading from standard input - please type stuff)")
 
     tree = p.run(file=filename, debug=debug)
     return tree

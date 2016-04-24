@@ -16,10 +16,14 @@ If you wish to use this software in a commercial application, and wish to
 depart from the GPL licensing requirements, please contact the author and apply
 for a commercial license.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import os
 
 from bison_ import unquoted
+from six.moves import filter
+from six.moves import map
 
 
 reSpaces = re.compile('\\s+')
@@ -42,19 +46,19 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     """
     # try to create output file
     try:
-        pyfile = file(pyfileName, 'w')
+        pyfile = open(pyfileName, 'w')
     except:
         raise Exception('Cannot create output file "%s"' % pyfileName)
 
     # try to open/read the bison file
     try:
-        rawBison = file(bisonfileName).read()
+        rawBison = open(bisonfileName).read()
     except:
         raise Exception('Cannot open bison file "%s"' % bisonfileName)
 
     # try to open/read the lex file
     try:
-        rawLex = file(lexfileName).read()
+        rawLex = open(lexfileName).read()
     except:
         raise Exception('Cannot open lex file %s' % lexfileName)
 
@@ -82,7 +86,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
 
     prologueLines = tmp
 
-    prologueLines = filter(None, prologueLines)
+    prologueLines = [_f for _f in prologueLines if _f]
     tokens = []
     precRules = []
 
@@ -101,7 +105,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     # -------------------------------------------------------------
     # process rules
     rulesRaw = re.sub('\\n([\t ]+)', ' ', rulesRaw) # join broken lines
-    rulesLines = filter('', map(str.strip, re.split(unquoted % ';', rulesRaw)))
+    rulesLines = list(filter('', list(map(str.strip, re.split(unquoted % ';', rulesRaw)))))
 
     rules = []
     for rule in rulesLines:
@@ -112,7 +116,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         try:
             tgt, terms = re.split(unquoted % ':', rule)
         except ValueError:
-            print 'Error in rule: %s' % rule
+            print('Error in rule: %s' % rule)
             raise
 
         tgt, terms = tgt.strip(), terms.strip()
@@ -184,7 +188,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
 
         # now spit out class decs for every parse target
         for target, options in rules:
-            tmp = map(' '.join, options)
+            tmp = list(map(' '.join, options))
 
             # totally self-indulgent grammatical pedantry
             if target[0].lower() in ['a', 'e', 'i', 'o', 'u']:
@@ -292,7 +296,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         ]))
 
     for target, options in rules:
-        tmp = map(' '.join, options)
+        tmp = list(map(' '.join, options))
 
         if generateClasses:
             nodeClassName = target + '_Node'

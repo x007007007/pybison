@@ -16,7 +16,10 @@ If you wish to use this software in a commercial application, and wish to
 depart from the GPL licensing requirements, please contact the author and apply
 for a commercial license.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import xml
+from six.moves import zip
 
 class BisonNode:
     """
@@ -64,7 +67,7 @@ class BisonNode:
         node's children, the second element as an index into that
         child node's children, and so on
         """
-        if type(item) in [type(0), type(0L)]:
+        if type(item) in [type(0), type(0)]:
             return self.values[item]
         elif type(item) in [type(()), type([])]:
             if len(item) == 0:
@@ -91,16 +94,16 @@ class BisonNode:
         specialAttribs = ['option', 'target', 'names', 'values']
         indents = ' ' * indent * 2
         #print "%s%s: %s %s" % (indents, self.target, self.option, self.names)
-        print '%s%s:' % (indents, self.target)
+        print('%s%s:' % (indents, self.target))
 
-        for name, val in self.kw.items() + zip(self.names, self.values):
+        for name, val in list(self.kw.items()) + list(zip(self.names, self.values)):
             if name in specialAttribs or name.startswith('_'):
                 continue
 
             if isinstance(val, BisonNode):
                 val.dump(indent + 1)
             else:
-                print indents + '  %s=%s' % (name, val)
+                print(indents + '  %s=%s' % (name, val))
 
     def toxml(self):
         """

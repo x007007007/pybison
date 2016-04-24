@@ -3,9 +3,11 @@ Pyrex-generated portion of pybison
 """
 
 cdef extern from "Python.h":
-    object PyString_FromStringAndSize(char *, int)
-    object PyString_FromString(char *)
-    char *PyString_AsString(object o)
+    #object PyString_FromStringAndSize(char *, int)
+#object PyString_FromString(char *)
+    object PyBytes_FromString(char *)
+#    char *PyString_AsString(object o)
+    char *PyBytes_AsString(object o)
 
     object PyInt_FromLong(long ival)
     long PyInt_AsLong(object io)
@@ -62,7 +64,8 @@ cdef extern from "../c/bisondynlib.h":
     #int bisondynlib_build(char *libName, char *includedir)
 
 
-import sys, os, sha, re, imp, traceback
+import sys, os, re, imp, traceback
+from hashlib import md5
 import shutil
 import distutils.sysconfig
 import distutils.ccompiler
@@ -143,7 +146,7 @@ cdef class ParserEngine:
         self.openLib()
 
         # hash our parser spec, compare to hash val stored in lib
-        libHash = PyString_FromString(self.libHash)
+        libHash = PyBytes_FromString(self.libHash).decode('ascii')
         if self.parserHash != libHash:
             if verbose:
                 print "Hash discrepancy, need to rebuild bison lib"
@@ -177,7 +180,7 @@ cdef class ParserEngine:
         cdef void *handle
 
         # convert python filename string to c string
-        libFilename = PyString_AsString(self.libFilename_py)
+        libFilename = PyBytes_AsString(self.libFilename_py.encode('ascii'))
 
         parser = self.parser
 
@@ -235,7 +238,7 @@ cdef class ParserEngine:
                 method = getattr(parser, a)
                 gHandlers.append(method)
 
-        gHandlers.sort(cmpLines)
+        gHandlers.sort(key=cmpLines)
 
         # get start symbol, tokens, precedences, lex script
         gStart = parser.start
@@ -411,7 +414,7 @@ cdef class ParserEngine:
             '}',
             '',
             'int yyerror(char *msg)',
-            '{',
+            '{ fprintf(stderr, "error!");',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
             '                                        "report_syntax_error");',
             '  if (!fn)',
@@ -607,19 +610,15 @@ cdef class ParserEngine:
         self.closeLib()
 
 
-def cmpLines(meth1, meth2):
+def cmpLines(meth):
     """
     Used as a sort() argument for sorting parse target handler methods by
     the order of their declaration in their source file.
     """
     try:
-        line1 = meth1.func_code.co_firstlineno
-        line2 = meth2.func_code.co_firstlineno
+        return meth.__func__.__code__.co_firstlineno
     except:
-        line1 = meth1.__init__.func_code.co_firstlineno
-        line2 = meth2.__init__.func_code.co_firstlineno
-
-    return cmp(line1, line2)
+        return meth.__code__.co_firstlineno
 
 
 def hashParserObject(parser):
@@ -634,20 +633,20 @@ def hashParserObject(parser):
     lex script, and therefore, whether a shared parser lib rebuild
     is required.
     """
-    hasher = sha.new()
+    hasher = md5()
 
     # add the lex script
-    hasher.update(parser.lexscript)
+    hasher.update(parser.lexscript.encode('utf-8'))
 
     # add the tokens
 
     # workaround pyrex weirdness
     tokens = list(parser.tokens)
-    hasher.update(",".join(list(parser.tokens)))
+    hasher.update(",".join(list(parser.tokens)).encode('utf-8'))
 
     # add the precedences
     for direction, tokens in parser.precedences:
-        hasher.update(direction + "".join(tokens))
+        hasher.update((direction + "".join(tokens)).encode('utf-8'))
 
     # extract the parser target handler names
     handlerNames = dir(parser)
@@ -673,7 +672,7 @@ def hashParserObject(parser):
     # now add in the methods' docstrings
     for h in handlers:
         docString = h.__doc__
-        hasher.update(docString)
+        hasher.update(docString.encode('utf-8'))
 
     # done
     return hasher.hexdigest()

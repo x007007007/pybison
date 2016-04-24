@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
 import sys
 
 sys.path.insert(0, '../../build/lib.linux-x86_64-2.7/')

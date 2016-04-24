@@ -6,6 +6,8 @@ python file from a yacc file and lex file
 Run it with 2 arguments - filename.y and filename.l
 Output is filename.py
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 
 from bison import bisonToPython
@@ -18,9 +20,9 @@ def usage(s=None):
     progname = sys.argv[0]
 
     if s:
-        print progname + ': ' + s
+        print(progname + ': ' + s)
 
-    print '\n'.join([
+    print('\n'.join([
         'Usage: %s [-c] basefilename' % progname,
         '   or: %s [-c] grammarfile.y lexfile.l pyfile.py' % progname,
         '(generates a boilerplate python file from a grammar and lex file)',
@@ -31,7 +33,7 @@ def usage(s=None):
         '',
         'The "-c" argument causes the creation of a unique node class',
         'for each parse target - highly recommended for complex grammars',
-        ])
+        ]))
 
     sys.exit(1)
 

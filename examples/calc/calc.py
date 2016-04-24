@@ -2,7 +2,10 @@
 """
 A simple pybison parser program implementing a calculator
 """
+from __future__ import absolute_import
+from __future__ import print_function
 from bison import BisonParser
+from six.moves import input
 
 
 class Parser(BisonParser):
@@ -33,7 +36,7 @@ class Parser(BisonParser):
     # ------------------------------------------------------------------
     def read(self, nbytes):
         try:
-            return raw_input("> ") + "\n"
+            return input("> ") + "\n"
         except EOFError:
             return ''
 
@@ -63,7 +66,7 @@ class Parser(BisonParser):
              | exp NEWLINE
         """
         if option == 1:
-            print values[0]
+            print(values[0])
 
     def on_exp(self, target, option, names, values):
         """

@@ -30,8 +30,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef _WIN32
+#define likely(x)       (x)
+#define unlikely(x)     (x)
+#else
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
+#endif
 
 static PyObject *py_attr_hook_handler_name;
 static PyObject *py_attr_hook_read_after_name;

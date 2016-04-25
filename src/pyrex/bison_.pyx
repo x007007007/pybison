@@ -1,7 +1,6 @@
 """
 Pyrex-generated portion of pybison
 """
-
 cdef extern from "Python.h":
     #object PyString_FromStringAndSize(char *, int)
 #object PyString_FromString(char *)
@@ -146,7 +145,7 @@ cdef class ParserEngine:
         self.openLib()
 
         # hash our parser spec, compare to hash val stored in lib
-        libHash = PyBytes_FromString(self.libHash).decode('ascii')
+        libHash = PyBytes_FromString(self.libHash)
         if self.parserHash != libHash:
             if verbose:
                 print "Hash discrepancy, need to rebuild bison lib"
@@ -461,8 +460,15 @@ cdef class ParserEngine:
         f.close()
 
         # create and set up a compiler object
-        env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
-        env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+        if sys.platform == 'win32':
+            env = distutils.ccompiler.new_compiler(compiler='mingw32', verbose=parser.verbose)
+            env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+            env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
+            env.set_library_dirs([os.path.join(sys.prefix, 'libs')])
+        else:
+            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+            env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+
 
         # -----------------------------------------
         # Now run bison on the grammar file

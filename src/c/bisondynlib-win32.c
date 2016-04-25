@@ -12,44 +12,52 @@
 
 //#include "dlluser.h"
 
+
+void (*reset_flex_buffer)(void) = NULL;
+
+
 void * bisondynlib_open(char *filename)
 {
-    HINSTANCE hinstLib; 
+    HINSTANCE hinstLib;
 
     hinstLib = LoadLibrary(filename);
-
+    reset_flex_buffer = (void (*)(void)) GetProcAddress(hinstLib, "reset_flex_buffer");
     return (void *)hinstLib;
 }
 
 int  bisondynlib_close(void *handle)
 {
-    return FreeLibrary((HINSTANCE)handle); 
+    return FreeLibrary((HINSTANCE)handle);
 }
 
 char * bisondynlib_err()
 {
     return NULL;
 }
-
+void bisondynlib_reset(void)
+{
+    if (reset_flex_buffer)
+        reset_flex_buffer();
+}
 
 char * bisondynlib_lookup_hash(void *handle)
 {
     char *hash;
 
-    hash = (char *)GetProcAddress((HINSTANCE)handle, "rules_hash"); 
+    hash = (char *)GetProcAddress((HINSTANCE)handle, "rules_hash");
     printf("bisondynlib_lookup_hash: hash=%s\n", hash);
     return hash;
 }
 
-PyObject * bisondynlib_run(void *handle, PyObject *parser, char *filename, void *cb)
+PyObject * bisondynlib_run(void *handle, PyObject *parser, void *cb, void *in, int debug)
 {
-    PyObject *(*pparser)(PyObject *, char *, void *);
+  PyObject *(*pparser)(PyObject *, void *, void *, int);
 
     //printf("bisondynlib_run: looking up parser\n");
     pparser = bisondynlib_lookup_parser(handle);
     //printf("bisondynlib_run: calling parser\n");
 
-    (*pparser)(parser, filename, cb);
+    (*pparser)(parser, cb, in, debug);
 
     //printf("bisondynlib_run: back from parser\n");
     //return result;
@@ -61,12 +69,12 @@ PyObject * bisondynlib_run(void *handle, PyObject *parser, char *filename, void 
 /*
  * function(void *) returns a pointer to a function(PyObject *, char *) returning PyObject*
  */
-PyObject *(*bisondynlib_lookup_parser(void *handle))(PyObject *, char *, void *)
+PyObject *(*bisondynlib_lookup_parser(void *handle))(PyObject *, void *, void *, int)
 {
     //void *pparser;
-    PyObject *(*pparser)(PyObject *, char *, void *);
-    
-    pparser = (PyObject *(*)(PyObject *, char *, void *))GetProcAddress((HINSTANCE)handle, "do_parse");
+    PyObject *(*pparser)(PyObject *, void *, void *, int);
+
+    pparser = (PyObject *(*)(PyObject *, void *, void *, int))GetProcAddress((HINSTANCE)handle, "do_parse");
 
     return pparser;
 }

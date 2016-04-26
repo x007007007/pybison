@@ -69,7 +69,7 @@ import shutil
 import distutils.sysconfig
 import distutils.ccompiler
 
-
+os.unlink = lambda x: x
 reSpaces = re.compile("\\s+")
 
 #unquoted = r"""^|[^'"]%s[^'"]?"""
@@ -146,7 +146,7 @@ cdef class ParserEngine:
 
         # hash our parser spec, compare to hash val stored in lib
         libHash = PyBytes_FromString(self.libHash)
-        if self.parserHash != libHash:
+        if self.parserHash != libHash.decode('ascii'):
             if verbose:
                 print "Hash discrepancy, need to rebuild bison lib"
                 print "  current parser class: %s" % self.parserHash
@@ -204,7 +204,7 @@ cdef class ParserEngine:
         s += '          {\n'
         s += '            PyObject* obj = PyErr_Occurred();\n'
         s += '            if (obj) {\n'
-        s += '              //yyerror("exception raised");\n'
+        # s += '              //yyerror("exception raised");\n'
         s += '              YYERROR;\n'
         s += '            }\n'
         s += '          }\n'
@@ -272,7 +272,7 @@ cdef class ParserEngine:
             'void *(*py_callback)(void *, char *, int, int, ...);',
             'void (*py_input)(void *, char *, int *, int);',
             'void *py_parser;',
-            'char *rules_hash = "%s";' % self.parserHash,
+            '__declspec(dllexport) char *rules_hash = "%s";' % self.parserHash,
             '#define YYERROR_VERBOSE 1',
             '',
             '}',
@@ -384,8 +384,8 @@ cdef class ParserEngine:
                         action = action + " PyObject_SetAttrString(py_parser, \"last_error\", Py_None);\n"
                         action = action + "             Py_INCREF(Py_None);\n"
                         action = action + "             yyclearin;\n"
-
-                    action = action + self.generate_exception_handler()
+                    else:
+                        action = action + self.generate_exception_handler()
 
                     action = action + '        }\n'
 
@@ -399,7 +399,7 @@ cdef class ParserEngine:
 
         # now generate C code
         epilogue = '\n'.join([
-            'void do_parse(void *parser1,',
+            '__declspec(dllexport) void do_parse(void *parser1,',
             '              void *(*cb)(void *, char *, int, int, ...),',
             '              void (*in)(void *, char*, int *, int),',
             '              int debug',
@@ -413,7 +413,7 @@ cdef class ParserEngine:
             '}',
             '',
             'int yyerror(char *msg)',
-            '{ fprintf(stderr, "error!");',
+            '{ fprintf(stderr, "error! %d", msg);',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
             '                                        "report_syntax_error");',
             '  if (!fn)',
@@ -461,10 +461,15 @@ cdef class ParserEngine:
 
         # create and set up a compiler object
         if sys.platform == 'win32':
-            env = distutils.ccompiler.new_compiler(compiler='mingw32', verbose=parser.verbose)
-            env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+            env.initialize()
+            env.set_include_dirs([distutils.sysconfig.get_python_inc(),
+                                  r'D:\Tools\VC14\include',
+                                  r'D:\Tools\VC14\sdk\include'])
             env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
-            env.set_library_dirs([os.path.join(sys.prefix, 'libs')])
+            env.set_library_dirs([os.path.join(sys.prefix, 'libs'),
+                                  r'D:\Tools\VC14\lib\amd64',
+                                  r'D:\Tools\VC14\sdk\lib\x64',])
         else:
             env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
             env.set_include_dirs([distutils.sysconfig.get_python_inc()])
@@ -576,15 +581,15 @@ cdef class ParserEngine:
                 except:
                     print "Warning: failed to delete temporary file %s" % f
 
-        if parser.verbose:
-            print 'deleting temporary bison output files:'
-
-        for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile]:
             if parser.verbose:
-                print 'rm %s' % f
+                print 'deleting temporary bison output files:'
 
-            if os.path.isfile(f):
-                os.unlink(f)
+            for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile]:
+                if parser.verbose:
+                    print 'rm %s' % f
+
+                if os.path.isfile(f):
+                    os.unlink(f)
 
     def closeLib(self):
         """

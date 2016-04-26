@@ -171,7 +171,6 @@ class BisonParser(object):
         otherwise wraps the target in a BisonNode object
         """
         handler = getattr(self, 'on_' + targetname, None)
-
         if handler:
             if self.verbose:
                 try:
@@ -181,9 +180,13 @@ class BisonParser(object):
 
                 print('BisonParser._handle: call handler at line %s with: %s' \
                       % (hdlrline, str((targetname, option, names, values))))
-
-            self.last = handler(target=targetname, option=option, names=names,
-                                values=values)
+            try:
+                self.last = handler(target=targetname, option=option, names=names,
+                                    values=values)
+            except Exception as e:
+                print("returning exception")
+                self.last = e
+                return e
 
             #if self.verbose:
             #    print 'handler for %s returned %s' \
@@ -304,7 +307,8 @@ class BisonParser(object):
 
         if self.verbose:
             print('Parser.read: got %s bytes' % len(bytes))
-
+            print(bytes)
+            input()
         return bytes
 
     def report_last_error(self, filename, error):

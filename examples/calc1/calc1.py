@@ -17,6 +17,10 @@ class Parser(BisonParser):
     Scanner rules are in the 'lexscript' attribute.
     """
     verbose = True
+    debugSymbols=True
+    keepfiles = True
+    import os
+    os.environ['LINK'] = '/debug'
     # ----------------------------------------------------------------
     # lexer tokens - these must match those in your lex script (below)
     # ----------------------------------------------------------------
@@ -41,16 +45,16 @@ class Parser(BisonParser):
     # --------------------------------------------
     # basename of binary parser engine dynamic lib
     # --------------------------------------------
-    bisonEngineLibName = "calc1-engine"
+    bisonEngineLibName = "calc1engine"
 
     # ------------------------------------------------------------------
     # override default read method with a version that prompts for input
     # ------------------------------------------------------------------
     def read(self, nbytes):
         try:
-            return input("> ") + "\n"
+            return (input("> ") + "\n").encode('ascii')
         except EOFError:
-            return ''
+            return b''
 
     # -----------------------------------------------------------
     # override default run method to set up our variables storage
@@ -146,7 +150,7 @@ class Parser(BisonParser):
         """
         try:
             return values[0] % values[2]
-        except:
+        except Exception as e:
             return self.error("Modulus by zero error")
 
     def on_powexp(self, target, option, names, values):
@@ -174,6 +178,8 @@ class Parser(BisonParser):
         if values[0] in self.vars:
             return self.vars[values[0]]
         else:
+            print("error: no such variable", values[0])
+            return(Exception(""))
             return self.error("No such variable '%s'" % values[0])
 
     def on_functioncall(self, target, option, names, values):
@@ -196,6 +202,14 @@ class Parser(BisonParser):
         """
         return getattr(math, values[0])
 
+    def on_myquit(self, target, option, names, values):
+        """
+        myquit : QUIT
+        """
+        print("i am in quit")
+        return -1
+
+
     # -----------------------------------------
     # Display help
     # -----------------------------------------
@@ -212,6 +226,7 @@ class Parser(BisonParser):
     # -----------------------------------------
     lexscript = r"""
     %{
+    int yylineno = 0;
     #include <stdio.h>
     #include <string.h>
     #include "Python.h"
@@ -235,7 +250,7 @@ class Parser(BisonParser):
     "**"   { returntoken(POW); }
     "/"    { returntoken(DIVIDE); }
     "%"    { returntoken(MOD); }
-    "quit" { printf("lex: got QUIT\n"); yyterminate(); returntoken(QUIT); }
+    "quit" { printf("lex: got QUIT\n"); returntoken(QUIT); }
     "="    { returntoken(EQUALS); }
     "e"    { returntoken(E); }
     "pi"   { returntoken(PI); }

@@ -125,7 +125,11 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
     if (unlikely(!arglist)) { Py_DECREF(handle); return res; }
 
     res = PyObject_CallObject(handle, arglist);
-
+    PyObject *exc = PyErr_Occurred();
+    if(unlikely(exc)){
+      printf("exception in callback!!\n");
+      return -1;
+    }
     Py_DECREF(handle);
     Py_DECREF(arglist);
 
@@ -205,9 +209,11 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size)
     if (unlikely(!res)) return;
 
 finish_input:
-
     // Copy the read python input string to the buffer
-    bufstr = PyUnicode_AsUTF8(res);
+    bufstr = PyBytes_AsString(res);
+    if(!bufstr){
+      return;
+    }
     *result = strlen(bufstr);
     memcpy(buf, bufstr, *result);
 

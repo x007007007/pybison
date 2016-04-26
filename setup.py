@@ -15,7 +15,7 @@ import sys
 if sys.platform == 'win32':
     print('No windows support at this time. PyBison won\'t work for you :(')
     libs = []
-    extra_link_args = []
+    extra_link_args = ['/debug','/Zi']
     bison2pyscript = 'utils/bison2py.py'
     bisondynlibModule = 'src/c/bisondynlib-win32.c'
 elif sys.platform == 'linux':
@@ -38,6 +38,7 @@ setup(
                     'src/pyrex/bison_.pyx',
                     'src/c/bison_callback.c',
                     bisondynlibModule],
+                    extra_compile_args=['/Od','/Zi','-D__builtin_expect(a,b)=(a)'],
                 libraries=libs,
                 extra_link_args=extra_link_args,
                 )

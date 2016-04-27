@@ -413,7 +413,9 @@ cdef class ParserEngine:
             '}',
             '',
             'int yyerror(char *msg)',
-            '{ fprintf(stderr, "error! %d", msg);',
+            '{ fprintf(stderr, "error!\\n");',
+            '  PyObject *error = PyErr_Occurred();',
+            '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
             '                                        "report_syntax_error");',
             '  if (!fn)',
@@ -611,8 +613,10 @@ cdef class ParserEngine:
 
         cbvoid = <void *>py_callback
         invoid = <void *>py_input
-
-        return bisondynlib_run(handle, parser, cbvoid, invoid, debug)
+        try:
+            ret = bisondynlib_run(handle, parser, cbvoid, invoid, debug)
+        except Exception as e:
+            print(e)
 
     def __del__(self):
         """

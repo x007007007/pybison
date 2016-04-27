@@ -81,9 +81,17 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
     // Construct the names and values list from the variable argument list.
     for(i = 0; i < nargs; i++) {
         PyObject *name = PyUnicode_FromString(va_arg(ap, char *));
+        if(!name){
+          Py_INCREF(Py_None);
+          name = Py_None;
+        }
         PyList_SetItem(names, i, name);
 
         PyObject *value = va_arg(ap, PyObject *);
+        if(!value){
+          Py_INCREF(Py_None);
+          value = Py_None;
+        }
         Py_INCREF(value);
         PyList_SetItem(values, i, value);
     }

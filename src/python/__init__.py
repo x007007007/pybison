@@ -308,7 +308,6 @@ class BisonParser(object):
         if self.verbose:
             print('Parser.read: got %s bytes' % len(bytes))
             print(bytes)
-            input()
         return bytes
 
     def report_last_error(self, filename, error):

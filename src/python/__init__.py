@@ -184,7 +184,7 @@ class BisonParser(object):
                 self.last = handler(target=targetname, option=option, names=names,
                                     values=values)
             except Exception as e:
-                print("returning exception")
+                print("returning exception", e, targetname, option, names, values)
                 self.last = e
                 return e
 

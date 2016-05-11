@@ -7,7 +7,7 @@ cdef extern from "Python.h":
     object PyBytes_FromString(char *)
 #    char *PyString_AsString(object o)
     char *PyBytes_AsString(object o)
-
+    object PyUnicode_FromString(char *)
     object PyInt_FromLong(long ival)
     long PyInt_AsLong(object io)
 
@@ -145,8 +145,8 @@ cdef class ParserEngine:
         self.openLib()
 
         # hash our parser spec, compare to hash val stored in lib
-        libHash = PyBytes_FromString(self.libHash)
-        if self.parserHash != libHash.decode('ascii'):
+        libHash = PyUnicode_FromString(self.libHash)
+        if self.parserHash != libHash:
             if verbose:
                 print "Hash discrepancy, need to rebuild bison lib"
                 print "  current parser class: %s" % self.parserHash

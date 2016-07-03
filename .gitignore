@@ -4,3 +4,6 @@ build/
 src/pyrex/bison_.c
 src/pyrex/bison_.h
 
+bison.egg-info
+src/bison_.cpython-35m-x86_64-linux-gnu.so
+examples/java/javaparser.py

@@ -1,3 +1,4 @@
+# cython: language_level=3
 """
 Pyrex-generated portion of pybison
 """
@@ -62,7 +63,7 @@ cdef extern from "../c/bisondynlib.h":
     #int bisondynlib_build(char *libName, char *includedir)
 
 
-import sys, os, sha, re, imp, traceback
+import sys, os, hashlib, re, imp, traceback
 import shutil
 import distutils.sysconfig
 import distutils.ccompiler
@@ -644,7 +645,7 @@ def hashParserObject(parser):
     lex script, and therefore, whether a shared parser lib rebuild
     is required.
     """
-    hasher = sha.new()
+    hasher = hashlib.new('sha1')
 
     # add the lex script
     hasher.update(parser.lexscript)

@@ -148,7 +148,7 @@ class BisonParser(object):
 
         self.verbose = kw.get('verbose', 0)
 
-        if kw.has_key('keepfiles'):
+        if 'keepfiles' in kw:
             self.keepfiles = kw['keepfiles']
 
         # if engine lib name not declared, invent ont

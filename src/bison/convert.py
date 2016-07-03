@@ -42,19 +42,19 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     """
     # try to create output file
     try:
-        pyfile = file(pyfileName, 'w')
+        pyfile = open(pyfileName, 'w')
     except:
         raise Exception('Cannot create output file "%s"' % pyfileName)
 
     # try to open/read the bison file
     try:
-        rawBison = file(bisonfileName).read()
+        rawBison = open(bisonfileName).read()
     except:
         raise Exception('Cannot open bison file "%s"' % bisonfileName)
 
     # try to open/read the lex file
     try:
-        rawLex = file(lexfileName).read()
+        rawLex = open(lexfileName).read()
     except:
         raise Exception('Cannot open lex file %s' % lexfileName)
 
@@ -109,10 +109,11 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         #print (repr(rule))
 
         #tgt, terms = rule.split(':')
+        print (rule, unquoted)
         try:
             tgt, terms = re.split(unquoted % ':', rule)
         except ValueError:
-            print 'Error in rule: %s' % rule
+            print ('Error in rule: %s' % rule)
             raise
 
         tgt, terms = tgt.strip(), terms.strip()

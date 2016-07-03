@@ -46,7 +46,7 @@ static PyObject *py_attr_close_name;
 // TODO: where do we Py_DECREF(handle_name) ??
 #define INIT_ATTR(variable, name, failure) \
     if (unlikely(!variable)) { \
-        variable = PyString_FromString(name); \
+        variable = PyUnicode_FromString(name); \
         if (!variable) failure; \
     }
 
@@ -75,7 +75,7 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
 
     // Construct the names and values list from the variable argument list.
     for(i = 0; i < nargs; i++) {
-        PyObject *name = PyString_FromString(va_arg(ap, char *));
+        PyObject *name = PyUnicode_FromString(va_arg(ap, char *));
         PyList_SetItem(names, i, name);
 
         PyObject *value = va_arg(ap, PyObject *);
@@ -202,7 +202,7 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size)
 finish_input:
 
     // Copy the read python input string to the buffer
-    bufstr = PyString_AsString(res);
+    bufstr = PyUnicode_AsUTF8String(res);
     *result = strlen(bufstr);
     memcpy(buf, bufstr, *result);
 

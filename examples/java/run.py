@@ -27,12 +27,12 @@ src = "I2PClient.java"
 
 p = javaparser.Parser(verbose=verbose)
 
-print "delmebld.py: running parser on HelloWorldApp.java"
+print ("delmebld.py: running parser on HelloWorldApp.java")
 res = p.run(file=src)
-print "back from engine, parse tree dump follows:"
+print ("back from engine, parse tree dump follows:")
 if 0:
-    print "------------------------------------------"
+    print ("------------------------------------------")
     res.dump()
-    print "------------------------------------------"
-    print "end of parse tree dump"
+    print ("------------------------------------------")
+    print ("end of parse tree dump")
 

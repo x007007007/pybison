@@ -64,7 +64,7 @@ class BisonNode:
         node's children, the second element as an index into that
         child node's children, and so on
         """
-        if type(item) in [type(0), type(0L)]:
+        if type(item) in [type(0)]:
             return self.values[item]
         elif type(item) in [type(()), type([])]:
             if len(item) == 0:

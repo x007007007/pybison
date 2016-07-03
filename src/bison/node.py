@@ -90,8 +90,8 @@ class BisonNode:
         """
         specialAttribs = ['option', 'target', 'names', 'values']
         indents = ' ' * indent * 2
-        #print "%s%s: %s %s" % (indents, self.target, self.option, self.names)
-        print '%s%s:' % (indents, self.target)
+        #print ("%s%s: %s %s" % (indents, self.target, self.option, self.names))
+        print ('%s%s:' % (indents, self.target))
 
         for name, val in self.kw.items() + zip(self.names, self.values):
             if name in specialAttribs or name.startswith('_'):
@@ -100,7 +100,7 @@ class BisonNode:
             if isinstance(val, BisonNode):
                 val.dump(indent + 1)
             else:
-                print indents + '  %s=%s' % (name, val)
+                print (indents + '  %s=%s' % (name, val))
 
     def toxml(self):
         """
@@ -163,6 +163,3 @@ class BisonNode:
 
         # done
         return x
-
-
-

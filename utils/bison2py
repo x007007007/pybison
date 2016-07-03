@@ -22,20 +22,20 @@ def usage(s=None):
     Display usage info and exit
     """
     if s:
-        print progname+": "+s
-    
-    print "\n".join([
-        "Usage: %s [-c] basefilename" % progname,
-        "   or: %s [-c] grammarfile.y lexfile.l pyfile.py" % progname,
-        "(generates a boilerplate python file from a grammar and lex file)",
-        "The first form uses 'basefilename' as base for all files, so:",
-        "  %s fred" % progname,
-        "is equivalent to:",
-        "  %s fred.y fred.l fred.py" % progname,
+        print (progname + ': ' + s)
+
+    print ('\n'.join([
+        'Usage: %s [-c] basefilename' % progname,
+        '   or: %s [-c] grammarfile.y lexfile.l pyfile.py' % progname,
+        '(generates a boilerplate python file from a grammar and lex file)',
+        'The first form uses "basefilename" as base for all files, so:',
+        '  %s fred' % progname,
+        'is equivalent to:',
+        '  %s fred.y fred.l fred.py' % progname,
         '',
         'The "-c" argument causes the creation of a unique node class',
         'for each parse target - highly recommended for complex grammars',
-        ])
+        ]))
 
     sys.exit(1)
 

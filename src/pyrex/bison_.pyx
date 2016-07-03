@@ -3,9 +3,9 @@ Pyrex-generated portion of pybison
 """
 
 cdef extern from "Python.h":
-    object PyString_FromStringAndSize(char *, int)
-    object PyString_FromString(char *)
-    char *PyString_AsString(object o)
+    object PyUnicode_FromStringAndSize(char *, int)
+    object PyUnicode_FromString(char *)
+    char *PyUnicode_AsUTF8String(object o)
 
     object PyInt_FromLong(long ival)
     long PyInt_AsLong(object io)
@@ -146,18 +146,18 @@ cdef class ParserEngine:
         self.openLib()
 
         # hash our parser spec, compare to hash val stored in lib
-        libHash = PyString_FromString(self.libHash)
+        libHash = PyUnicode_FromString(self.libHash)
         if self.parserHash != libHash:
             if verbose:
-                print "Hash discrepancy, need to rebuild bison lib"
-                print "  current parser class: %s" % self.parserHash
-                print "         bison library: %s" % libHash
+                print ("Hash discrepancy, need to rebuild bison lib")
+                print ("  current parser class: %s" % self.parserHash)
+                print ("         bison library: %s" % libHash)
             self.closeLib()
             self.buildLib()
             self.openLib()
         else:
             if verbose:
-                print "Hashes match, no need to rebuild bison engine lib"
+                print ("Hashes match, no need to rebuild bison engine lib")
 
     def openLib(self):
         """
@@ -180,12 +180,12 @@ cdef class ParserEngine:
         cdef void *handle
 
         # convert python filename string to c string
-        libFilename = PyString_AsString(self.libFilename_py)
+        libFilename = PyUnicode_AsUTF8String(self.libFilename_py)
 
         parser = self.parser
 
         if parser.verbose:
-            print 'Opening library %s' % self.libFilename_py
+            print ('Opening library %s' % self.libFilename_py)
         handle = bisondynlib_open(libFilename)
         self.libHandle = handle
         err = bisondynlib_err()
@@ -197,7 +197,7 @@ cdef class ParserEngine:
         self.libHash = bisondynlib_lookup_hash(handle)
 
         if parser.verbose:
-            print 'Successfully loaded library'
+            print ('Successfully loaded library')
 
     def generate_exception_handler(self):
         s = ''
@@ -254,7 +254,7 @@ cdef class ParserEngine:
             os.unlink(buildDirectory + parser.bisonFile)
 
         if parser.verbose:
-            print 'generating bison file:', buildDirectory + parser.bisonFile
+            print ('generating bison file:', buildDirectory + parser.bisonFile)
 
         f = open(buildDirectory + parser.bisonFile, "w")
         write = f.write
@@ -318,10 +318,10 @@ cdef class ParserEngine:
             #target, options = doc.split(":")
             doc = re.sub(unquoted % ";", "", doc)
 
-            #print "---------------------"
+            #print ("---------------------")
 
             s = re.split(unquoted % ":", doc)
-            #print "s=%s" % s
+            #print ("s=%s" % s)
 
             target, options = s
             target = target.strip()
@@ -329,13 +329,13 @@ cdef class ParserEngine:
             options = options.strip()
             tmp = []
 
-            #print "options = %s" % repr(options)
+            #print ("options = %s" % repr(options))
             #opts = options.split("|")
-            ##print "opts = %s" % repr(opts)
+            ##print ("opts = %s" % repr(opts))
             r = unquoted % r"\|"
-            #print "r = <%s>" % r
+            #print ("r = <%s>" % r)
             opts1 = re.split(r, " " + options)
-            #print "opts1 = %s" % repr(opts1)
+            #print ("opts1 = %s" % repr(opts1))
 
             for o in opts1:
                 o = o.strip()
@@ -470,16 +470,16 @@ cdef class ParserEngine:
         bisonCmd = parser.bisonCmd + [buildDirectory + parser.bisonFile]
 
         if parser.verbose:
-            print 'bison cmd:', ' '.join(bisonCmd)
+            print ('bison cmd:', ' '.join(bisonCmd))
 
         env.spawn(bisonCmd)
 
         if parser.verbose:
-            print 'renaming bison output files'
-            print '%s => %s%s' % (parser.bisonCFile, buildDirectory,
-                                  parser.bisonCFile1)
-            print '%s => %s%s' % (parser.bisonHFile, buildDirectory,
-                                  parser.bisonHFile1)
+            print ('renaming bison output files')
+            print ('%s => %s%s' % (parser.bisonCFile, buildDirectory,
+                                  parser.bisonCFile1))
+            print ('%s => %s%s' % (parser.bisonHFile, buildDirectory,
+                                  parser.bisonHFile1))
 
         if os.path.isfile(buildDirectory + parser.bisonCFile1):
             os.unlink(buildDirectory + parser.bisonCFile1)
@@ -497,7 +497,7 @@ cdef class ParserEngine:
         flexCmd = parser.flexCmd + [buildDirectory + parser.flexFile]
 
         if parser.verbose:
-            print 'flex cmd:', ' '.join(flexCmd)
+            print ('flex cmd:', ' '.join(flexCmd))
 
         env.spawn(flexCmd)
 
@@ -505,8 +505,8 @@ cdef class ParserEngine:
             os.unlink(buildDirectory + parser.flexCFile1)
 
         if parser.verbose:
-            print '%s => %s%s' % (parser.flexCFile, buildDirectory,
-                                  parser.flexCFile1)
+            print ('%s => %s%s' % (parser.flexCFile, buildDirectory,
+                                  parser.flexCFile1))
 
         shutil.copy(parser.flexCFile, buildDirectory + parser.flexCFile1)
 
@@ -538,7 +538,7 @@ cdef class ParserEngine:
             os.rename(libFileName, libFileName+".bak")
 
         if parser.verbose:
-            print 'linking: %s => %s' % (', '.join(objs), libFileName)
+            print ('linking: %s => %s' % (', '.join(objs), libFileName))
 
         if sys.platform.startswith('darwin'):
             # on OSX, ld throws undefined symbol for shared library references
@@ -549,7 +549,7 @@ cdef class ParserEngine:
         env.link_shared_object(objs, libFileName)
 
         #cdef char *incdir
-        #incdir = PyString_AsString(get_python_inc())
+        #incdir = PyUnicode_AsString(get_python_inc())
         #bisondynlib_build(self.libFilename_py, incdir)
 
         # --------------------------------------------
@@ -566,7 +566,7 @@ cdef class ParserEngine:
                     fname = buildDirectory + getattr(parser, name)
                 else:
                     fname = None
-                #print "want to delete %s" % fname
+                #print ("want to delete %s" % fname)
                 if fname and os.path.isfile(fname):
                     hitlist.append(fname)
 
@@ -575,14 +575,14 @@ cdef class ParserEngine:
                 try:
                     os.unlink(f)
                 except:
-                    print "Warning: failed to delete temporary file %s" % f
+                    print ("Warning: failed to delete temporary file %s" % f)
 
         if parser.verbose:
-            print 'deleting temporary bison output files:'
+            print ('deleting temporary bison output files:')
 
         for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile]:
             if parser.verbose:
-                print 'rm %s' % f
+                print ('rm %s' % f)
 
             if os.path.isfile(f):
                 os.unlink(f)
@@ -629,7 +629,7 @@ def cmpLines(meth1, meth2):
         line1 = meth1.__init__.func_code.co_firstlineno
         line2 = meth2.__init__.func_code.co_firstlineno
 
-    return cmp(line1, line2)
+    return (line1 > line2) - (line1 < line2)
 
 
 def hashParserObject(parser):

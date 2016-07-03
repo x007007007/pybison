@@ -111,24 +111,24 @@ class XMLifier(object):
         else:
             nodeobj = None
 
-        #print '----------------'
-        #print 'objname=%s' % repr(objname)
-        #print 'classname=%s' % repr(classname)
-        #print 'classobj=%s' % repr(classobj)
-        #print 'nodeobj=%s' % repr(nodeobj)
+        #print ('----------------')
+        #print ('objname=%s' % repr(objname))
+        #print ('classname=%s' % repr(classname))
+        #print ('classobj=%s' % repr(classobj))
+        #print ('nodeobj=%s' % repr(nodeobj))
 
         # now add the children
         for child in xmlobj.childNodes:
-            #print '%s attributes=%s' % (child, child.attributes.items())
+            #print ('%s attributes=%s' % (child, child.attributes.items()))
             childname = child.attributes['target'].value
-            #print 'childname=%s' % childname
+            #print ('childname=%s' % childname)
             if childname + '_Node' in namespacekeys:
-                #print 'we have a node for class %s' % classname
+                #print ('we have a node for class %s' % classname)
                 childobj = self.loadxmlobj(child, namespace)
             else:
                 # it's a token
                 childobj = child.childNodes[0].nodeValue
-                #print 'got token %s=%s' % (childname, childobj)
+                #print ('got token %s=%s' % (childname, childobj))
 
             nodeobj.names.append(childname)
             nodeobj.values.append(childobj)

@@ -18,9 +18,9 @@ def usage(s=None):
     progname = sys.argv[0]
 
     if s:
-        print progname + ': ' + s
+        print (progname + ': ' + s)
 
-    print '\n'.join([
+    print ('\n'.join([
         'Usage: %s [-c] basefilename' % progname,
         '   or: %s [-c] grammarfile.y lexfile.l pyfile.py' % progname,
         '(generates a boilerplate python file from a grammar and lex file)',
@@ -31,7 +31,7 @@ def usage(s=None):
         '',
         'The "-c" argument causes the creation of a unique node class',
         'for each parse target - highly recommended for complex grammars',
-        ])
+        ]))
 
     sys.exit(1)
 

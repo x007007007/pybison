@@ -4,9 +4,10 @@ Builds bison python module
 
 version = '0.1'
 
-from distutils.core import setup
-from distutils.extension import Extension
-from Pyrex.Distutils import build_ext
+from setuptools import setup
+from setuptools import Extension
+from Cython.Distutils import build_ext
+from setuptools import find_packages
 
 import sys
 
@@ -49,8 +50,9 @@ setup(
                 extra_link_args=extra_link_args,
                 )
             ],
+        #packages=find_packages(),
         packages=['bison'],
-        package_dir={'bison': 'src/python'},
+        package_dir={'': 'src'},
         #py_modules=['node', 'xmlifier', 'convert'],
         cmdclass={'build_ext': build_ext},
         scripts=[bison2pyscript],

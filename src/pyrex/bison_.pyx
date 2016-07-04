@@ -239,7 +239,7 @@ cdef class ParserEngine:
                 method = getattr(parser, a)
                 gHandlers.append(method)
 
-        gHandlers.sort(cmpLines)
+        gHandlers.sort(key=keyLines)
 
         # get start symbol, tokens, precedences, lex script
         gStart = parser.start
@@ -300,12 +300,12 @@ cdef class ParserEngine:
             ]))
 
         # write out tokens and start target dec
-        write('%%token %s\n\n' % ' '.join(gTokens))
+        write('%%token %s\n\n' % ' '.join(gTokens[0]))
         write('%%start %s\n\n' % gStart)
 
         # write out precedences
         for p in gPrecedences:
-            write("%%%s  %s\n" % (p[0], " ".join(p[1])))
+            write("%%%s  %s\n" % (p[0], " ".join(p[1][0])))
 
         write("\n\n%%\n\n")
 
@@ -460,7 +460,7 @@ cdef class ParserEngine:
         f = open(buildDirectory + parser.flexFile, 'w')
         f.write('\n'.join(tmp) + '\n')
         f.close()
-        
+
         # create and set up a compiler object
         env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
         env.set_include_dirs([distutils.sysconfig.get_python_inc()])
@@ -544,7 +544,7 @@ cdef class ParserEngine:
         if sys.platform.startswith('darwin'):
             # on OSX, ld throws undefined symbol for shared library references
             # however, we would like to link against libpython dynamically, so that
-            # the built .so will not depend on which python interpreter it runs on 
+            # the built .so will not depend on which python interpreter it runs on
             env.linker_so += ['-undefined', 'dynamic_lookup']
 
         env.link_shared_object(objs, libFileName)
@@ -632,6 +632,18 @@ def cmpLines(meth1, meth2):
 
     return (line1 > line2) - (line1 < line2)
 
+def keyLines(meth):
+    """
+    Used as a sort() 'key' argument for sorting parse target handler methods by
+    the order of their declaration in their source file.
+    """
+    try:
+        line = meth.__code__.co_firstlineno
+    except:
+        line = meth.__init__.__code__.co_firstlineno
+
+    return line
+
 
 def hashParserObject(parser):
     """
@@ -646,19 +658,26 @@ def hashParserObject(parser):
     is required.
     """
     hasher = hashlib.new('sha1')
+    def update(o):
+        if type(o) == type(""):
+            o=o.encode("utf-8")
+        hasher.update(o)
 
     # add the lex script
-    hasher.update(parser.lexscript)
+    update(parser.lexscript)
 
     # add the tokens
 
     # workaround pyrex weirdness
-    tokens = list(parser.tokens)
-    hasher.update(",".join(list(parser.tokens)))
+    # tokens = list(parser.tokens)
+    tokens = parser.tokens[0]
+    update(",".join(tokens))
 
     # add the precedences
     for direction, tokens in parser.precedences:
-        hasher.update(direction + "".join(tokens))
+        tokens = tokens[0]
+        print (tokens)
+        update(direction + "".join(tokens))
 
     # extract the parser target handler names
     handlerNames = dir(parser)
@@ -684,7 +703,7 @@ def hashParserObject(parser):
     # now add in the methods' docstrings
     for h in handlers:
         docString = h.__doc__
-        hasher.update(docString)
+        update(docString)
 
     # done
     return hasher.hexdigest()

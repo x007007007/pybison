@@ -254,7 +254,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     pyfile.write('    # ----------------------------------------------------------------\n')
     pyfile.write('    # lexer tokens - these must match those in your lex script (below)\n')
     pyfile.write('    # ----------------------------------------------------------------\n')
-    pyfile.write('    tokens = %s\n\n' % tmp)
+    pyfile.write('    tokens = %s\n\n' % tokens)
 
     # add the precedences
     pyfile.write('    # ------------------------------\n')
@@ -265,7 +265,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         #precline = ', '.join(prec[1])
         pyfile.write('        (\'%s\', %s,),\n' % (
                 prec[0][1:], # left/right/nonassoc, quote-wrapped, no '%s'
-                tmp,  # quote-wrapped targets
+                prec[1],  # quote-wrapped targets
                 )
             )
     pyfile.write('        )\n\n'),

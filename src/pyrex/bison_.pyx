@@ -300,12 +300,12 @@ cdef class ParserEngine:
             ]))
 
         # write out tokens and start target dec
-        write('%%token %s\n\n' % ' '.join(gTokens[0]))
+        write('%%token %s\n\n' % ' '.join(gTokens))
         write('%%start %s\n\n' % gStart)
 
         # write out precedences
         for p in gPrecedences:
-            write("%%%s  %s\n" % (p[0], " ".join(p[1][0])))
+            write("%%%s  %s\n" % (p[0], " ".join(p[1])))
 
         write("\n\n%%\n\n")
 

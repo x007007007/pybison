@@ -10,7 +10,7 @@ Escchar      \\{D}({D}?{D})?
 Escunichar   \\u{H}{H}{H}{H}
 
 %{
-int yylineno = 0;
+//int yylineno = 0;
 #include <stdio.h>
 #include <string.h>
 #include "Python.h"
@@ -147,7 +147,7 @@ int Table_Lookup(struct KeywordToken Table[])
     return ID_TOKEN;
 }
 
-commentold()
+void commentold()
 {
     char c = -1, c1;
     while(c != 0)
@@ -164,7 +164,7 @@ commentold()
     }
 }
 
-comment()
+void comment()
 {
   int prev=-1, cur=-1;
 

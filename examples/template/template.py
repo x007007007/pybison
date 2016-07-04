@@ -105,7 +105,7 @@ class Parser(BisonParser):
         :
         | someTarget WORD
         """
-        print "on_someTarget: %s %s" % (option, repr(values))
+        print ("on_someTarget: %s %s" % (option, repr(values)))
         node = someTarget_Node(target=target,
                                option=option,
                                names=names,
@@ -126,11 +126,11 @@ class Parser(BisonParser):
 #include "Python.h"
 #define YYSTYPE void *
 #include "tokens.h"
-int yylineno = 0;
+//int yylineno = 0;
 int yywrap() { return(1); }
 extern void *py_parser;
 extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-#define returntoken(tok) yylval = PyString_FromString(strdup(yytext)); return (tok);
+#define returntoken(tok) yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
 #define YY_INPUT(buf,result,max_size) { (*py_input)(py_parser, buf, &result, max_size); }
 %}
 
@@ -154,12 +154,12 @@ extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
 # --------------------------------------------------
 
 def usage():
-    print "%s: PyBison template parser" % sys.argv[0]
-    print "Usage: %s [-k] [-v] [-d] [filename]" % sys.argv[0]
-    print "  -k       Keep temporary files used in building parse engine lib"
-    print "  -v       Enable verbose messages while parser is running"
-    print "  -d       Enable garrulous debug messages from parser engine"
-    print "  filename path of a file to parse, defaults to stdin"
+    print ("%s: PyBison template parser" % sys.argv[0])
+    print ("Usage: %s [-k] [-v] [-d] [filename]" % sys.argv[0])
+    print ("  -k       Keep temporary files used in building parse engine lib")
+    print ("  -v       Enable verbose messages while parser is running")
+    print ("  -d       Enable garrulous debug messages from parser engine")
+    print ("  filename path of a file to parse, defaults to stdin")
 
 def main(*args):
     """
@@ -192,7 +192,7 @@ def main(*args):
     p = Parser(verbose=verbose, keepfiles=keepfiles)
 
     if filename == None:
-        print "(Reading from standard input - please type stuff)"
+        print ("(Reading from standard input - please type stuff)")
 
     tree = p.run(file=filename, debug=debug)
     return tree

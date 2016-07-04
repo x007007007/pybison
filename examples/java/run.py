@@ -23,12 +23,13 @@ if argc == 2:
 else:
     src = None
 
-src = "I2PClient.java"
+src = "HelloWorldApp.java"
 
 p = javaparser.Parser(verbose=verbose)
 
 print ("delmebld.py: running parser on HelloWorldApp.java")
-res = p.run(file=src)
+#res = p.run(file=src)
+res = p.run()
 print ("back from engine, parse tree dump follows:")
 if 0:
     print ("------------------------------------------")

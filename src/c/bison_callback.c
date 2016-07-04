@@ -202,7 +202,7 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size)
 finish_input:
 
     // Copy the read python input string to the buffer
-    bufstr = PyUnicode_AsUTF8String(res);
+    bufstr = PyUnicode_AsUTF8(res);
     *result = strlen(bufstr);
     memcpy(buf, bufstr, *result);
 

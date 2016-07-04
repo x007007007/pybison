@@ -44,7 +44,7 @@ class Parser(BisonParser):
     # ------------------------------------------------------------------
     def read(self, nbytes):
         try:
-            return raw_input("> ") + "\n"
+            return input("> ") + "\n"
         except EOFError:
             return ''
 
@@ -85,7 +85,7 @@ class Parser(BisonParser):
              | error
         """
         if option == 1:
-            print values[0]
+            print (values[0])
             return values[0]
         elif option == 2:
             self.vars[values[0]] = values[2]
@@ -94,7 +94,7 @@ class Parser(BisonParser):
             self.show_help()
         elif option == 4:
             line, msg, near = self.lasterror
-            print "Line %s: \"%s\" near %s" % (line, msg, repr(near))
+            print ("Line %s: \"%s\" near %s" % (line, msg, repr(near)))
 
     def on_exp(self, target, option, names, values):
         """
@@ -181,7 +181,7 @@ class Parser(BisonParser):
             return self.error("No such function '%s'" % values[0])
         try:
             return func(values[2])
-        except Exception, e:
+        except Exception as e:
             return self.error(e.args[0])
 
     def on_constant(self, target, option, names, values):
@@ -195,19 +195,19 @@ class Parser(BisonParser):
     # Display help
     # -----------------------------------------
     def show_help(self):
-        print "This PyBison parser implements a basic scientific calculator"
-        print " * scientific notation now works for numbers, eg '2.3e+12'"
-        print " * you can assign values to variables, eg 'x = 23.2'"
-        print " * the constants 'pi' and 'e' are supported"
-        print " * all the python 'math' module functions are available, eg 'sin(pi/6)'"
-        print " * errors, such as division by zero, are now reported"
+        print ("This PyBison parser implements a basic scientific calculator")
+        print (" * scientific notation now works for numbers, eg '2.3e+12'")
+        print (" * you can assign values to variables, eg 'x = 23.2'")
+        print (" * the constants 'pi' and 'e' are supported")
+        print (" * all the python 'math' module functions are available, eg 'sin(pi/6)'")
+        print (" * errors, such as division by zero, are now reported")
 
     # -----------------------------------------
     # raw lex script, verbatim here
     # -----------------------------------------
     lexscript = r"""
     %{
-    int yylineno = 0;
+    //int yylineno = 0;
     #include <stdio.h>
     #include <string.h>
     #include "Python.h"
@@ -215,7 +215,7 @@ class Parser(BisonParser):
     #include "tokens.h"
     extern void *py_parser;
     extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-    #define returntoken(tok) yylval = PyString_FromString(strdup(yytext)); return (tok);
+    #define returntoken(tok) yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
     #define YY_INPUT(buf,result,max_size) { (*py_input)(py_parser, buf, &result, max_size); }
     %}
     
@@ -249,5 +249,5 @@ class Parser(BisonParser):
 
 if __name__ == '__main__':
     p = Parser(keepfiles=0)
-    print "Scientific calculator example. Type 'help' for help"
+    print ("Scientific calculator example. Type 'help' for help")
     p.run()

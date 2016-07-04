@@ -208,7 +208,7 @@
     #include "tokens.h"
     extern void *py_parser;
     extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-    #define returntoken(tok) yylval = PyString_FromString(strdup(yytext)); return (tok);
+    #define returntoken(tok) yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
     #define YY_INPUT(buf,result,max_size) {(*py_input)(py_parser, buf, &result, max_size);}
     }%</pre></b>
     
@@ -257,7 +257,7 @@
     </blockquote>
     
     <b><pre>
-    #define returntoken(tok) yylval = PyString_FromString(strdup(yytext)); return (tok);</pre></b>
+    #define returntoken(tok) yylval = PyUnicode_FromString(strdup(yytext)); return (tok);</pre></b>
     
     A macro which wraps all tokens values as Python strings, so your parser target handlers can uplift
     the original input text which constitutes that token.
@@ -685,7 +685,7 @@
     
     <b><pre>
     %{
-    int yylineno = 0;
+    int yylineno = 0; // Remove if engine fails to build.
     #include &lt;stdio.h&gt;
     #include &lt;string.h&gt;
     #include "Python.h"
@@ -693,7 +693,7 @@
     #include "tokens.h"
     extern void *py_parser;
     extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-    #define returntoken(tok) yylval = PyString_FromString(strdup(yytext)); return (tok);
+    #define returntoken(tok) yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
     #define YY_INPUT(buf,result,max_size) { (*py_input)(py_parser, buf, &result, max_size); }
     %}
     </pre></b>
@@ -770,7 +770,7 @@
     
         lexscript = r"""
     %{
-    int yylineno = 0;
+    int yylineno = 0; // Remove if engine fails to build.
     #include &lt;stdio.h&gt;
     #include &lt;string.h&gt;
     #include "Python.h"
@@ -778,7 +778,7 @@
     #include "tokens.h"
     extern void *py_parser;
     extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-    #define returntoken(tok) yylval = PyString_FromString(strdup(yytext)); return (tok);
+    #define returntoken(tok) yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
     #define YY_INPUT(buf,result,max_size) { (*py_input)(py_parser, buf, &result, max_size); }
     %}
     

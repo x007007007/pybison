@@ -18,10 +18,12 @@ Escunichar   \\u{H}{H}{H}{H}
 #include "tokens.h"
 extern void *py_parser;
 extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-#define returntoken(tok) /*printf("%d=%s\n", tok, yytext);*/ yylval = PyString_FromString(strdup(yytext)); return (tok);
+#define returntoken(tok) /*printf("%d=%s\n", tok, yytext);*/ yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
 #define YY_INPUT(buf,result,max_size) { (*py_input)(py_parser, buf, &result, max_size); }
 
 #include "table.h"
+void comment();
+void commentold();
 
 %}
 

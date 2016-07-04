@@ -6,7 +6,7 @@ Pyrex-generated portion of pybison
 cdef extern from "Python.h":
     object PyUnicode_FromStringAndSize(char *, int)
     object PyUnicode_FromString(char *)
-    char *PyUnicode_AsUTF8String(object o)
+    char *PyUnicode_AsUTF8(object o)
 
     object PyInt_FromLong(long ival)
     long PyInt_AsLong(object io)
@@ -181,7 +181,7 @@ cdef class ParserEngine:
         cdef void *handle
 
         # convert python filename string to c string
-        libFilename = PyUnicode_AsUTF8String(self.libFilename_py)
+        libFilename = PyUnicode_AsUTF8(self.libFilename_py)
 
         parser = self.parser
 
@@ -676,7 +676,6 @@ def hashParserObject(parser):
     # add the precedences
     for direction, tokens in parser.precedences:
         tokens = tokens[0]
-        print (tokens)
         update(direction + "".join(tokens))
 
     # extract the parser target handler names

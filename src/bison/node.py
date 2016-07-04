@@ -16,7 +16,10 @@ If you wish to use this software in a commercial application, and wish to
 depart from the GPL licensing requirements, please contact the author and apply
 for a commercial license.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import xml
+from six.moves import zip
 
 class BisonNode:
     """
@@ -100,7 +103,7 @@ class BisonNode:
             if isinstance(val, BisonNode):
                 val.dump(indent + 1)
             else:
-                print (indents + '  %s=%s' % (name, val))
+                print(indents + '  %s=%s' % (name, val))
 
     def toxml(self):
         """
@@ -163,3 +166,6 @@ class BisonNode:
 
         # done
         return x
+
+
+

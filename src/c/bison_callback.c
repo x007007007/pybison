@@ -30,8 +30,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef _WIN32
+#define likely(x)       (x)
+#define unlikely(x)     (x)
+#else
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
+#endif
 
 static PyObject *py_attr_hook_handler_name;
 static PyObject *py_attr_hook_read_after_name;
@@ -76,9 +81,17 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
     // Construct the names and values list from the variable argument list.
     for(i = 0; i < nargs; i++) {
         PyObject *name = PyUnicode_FromString(va_arg(ap, char *));
+        if(!name){
+          Py_INCREF(Py_None);
+          name = Py_None;
+        }
         PyList_SetItem(names, i, name);
 
         PyObject *value = va_arg(ap, PyObject *);
+        if(!value){
+          Py_INCREF(Py_None);
+          value = Py_None;
+        }
         Py_INCREF(value);
         PyList_SetItem(values, i, value);
     }
@@ -121,6 +134,11 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
 
     res = PyObject_CallObject(handle, arglist);
 
+    PyObject *exc = PyErr_Occurred();
+    if(unlikely(exc)){
+      printf("exception in callback!!\n");
+      return -1;
+    }
     Py_DECREF(handle);
     Py_DECREF(arglist);
 
@@ -203,6 +221,9 @@ finish_input:
 
     // Copy the read python input string to the buffer
     bufstr = PyUnicode_AsUTF8(res);
+    if(!bufstr){
+      return;
+    }
     *result = strlen(bufstr);
     memcpy(buf, bufstr, *result);
 

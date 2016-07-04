@@ -20,6 +20,7 @@ for a commercial license.
 # TODO: use cElementTree instead of Python's xml module.
 # TODO: test this module, since it is currently only moved to another file.
 
+from __future__ import absolute_import
 import xml.dom
 import xml.dom.minidom
 import types
@@ -95,7 +96,7 @@ class XMLifier(object):
         classname = objname + '_Node'
         classobj = namespace.get(classname, None)
 
-        namespacekeys = namespace.keys()
+        namespacekeys = list(namespace.keys())
 
         # barf if node is not a known parse node or token
         if (not classobj) and objname not in self.tokens:

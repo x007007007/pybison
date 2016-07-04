@@ -2,6 +2,8 @@
 Builds bison python module
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 version = '0.1'
 
 from setuptools import setup
@@ -47,7 +49,7 @@ setup(
                     bisondynlibModule],
                 libraries=libs,
                 extra_compile_args=['-Wall', '-Wextra'],
-                extra_link_args=extra_link_args,
+               # extra_compile_args=['/Od','/Zi','-D__builtin_expect(a,b)=(a)'], extra_link_args=extra_link_args,
                 )
             ],
         #packages=find_packages(),

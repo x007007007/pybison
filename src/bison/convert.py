@@ -16,10 +16,14 @@ If you wish to use this software in a commercial application, and wish to
 depart from the GPL licensing requirements, please contact the author and apply
 for a commercial license.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import os
 
 from bison_ import unquoted
+from six.moves import filter
+from six.moves import map
 
 
 reSpaces = re.compile('\\s+')
@@ -109,7 +113,6 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         #print (repr(rule))
 
         #tgt, terms = rule.split(':')
-        print (rule, unquoted)
         try:
             tgt, terms = re.split(unquoted % ':', rule)
         except ValueError:

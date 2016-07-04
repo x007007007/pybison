@@ -3,9 +3,12 @@
 A more advanced calculator example, with variable storage and scientific
 functions (courtesy of python 'math' module)
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import math
 
 from bison import BisonParser
+from six.moves import input
 
 
 class Parser(BisonParser):
@@ -13,6 +16,11 @@ class Parser(BisonParser):
     Implements the calculator parser. Grammar rules are defined in the method docstrings.
     Scanner rules are in the 'lexscript' attribute.
     """
+    verbose = True
+    debugSymbols=True
+    keepfiles = True
+    import os
+    os.environ['LINK'] = '/debug'
     # ----------------------------------------------------------------
     # lexer tokens - these must match those in your lex script (below)
     # ----------------------------------------------------------------
@@ -44,9 +52,9 @@ class Parser(BisonParser):
     # ------------------------------------------------------------------
     def read(self, nbytes):
         try:
-            return input("> ") + "\n"
+            return (input("> ") + "\n").encode('ascii')
         except EOFError:
-            return ''
+            return b''
 
     # -----------------------------------------------------------
     # override default run method to set up our variables storage
@@ -85,7 +93,7 @@ class Parser(BisonParser):
              | error
         """
         if option == 1:
-            print (values[0])
+            print(values[0])
             return values[0]
         elif option == 2:
             self.vars[values[0]] = values[2]
@@ -94,7 +102,7 @@ class Parser(BisonParser):
             self.show_help()
         elif option == 4:
             line, msg, near = self.lasterror
-            print ("Line %s: \"%s\" near %s" % (line, msg, repr(near)))
+            print("Line %s: \"%s\" near %s" % (line, msg, repr(near)))
 
     def on_exp(self, target, option, names, values):
         """
@@ -142,7 +150,7 @@ class Parser(BisonParser):
         """
         try:
             return values[0] % values[2]
-        except:
+        except Exception as e:
             return self.error("Modulus by zero error")
 
     def on_powexp(self, target, option, names, values):
@@ -167,15 +175,18 @@ class Parser(BisonParser):
         """
         varexp : IDENTIFIER
         """
-        if self.vars.has_key(values[0]):
+        if values[0] in self.vars:
             return self.vars[values[0]]
         else:
+            print("error: no such variable", values[0])
+            return(Exception(""))
             return self.error("No such variable '%s'" % values[0])
 
     def on_functioncall(self, target, option, names, values):
         """
         functioncall : IDENTIFIER LPAREN exp RPAREN
         """
+        print(values)
         func = getattr(math, values[0], None)
         if not callable(func):
             return self.error("No such function '%s'" % values[0])
@@ -190,24 +201,30 @@ class Parser(BisonParser):
                  | E
         """
         return getattr(math, values[0])
+    def on_myquit(self, target, option, names, values):
+        """
+        myquit : QUIT
+        """
+        print("i am in quit")
+        return -1
 
     # -----------------------------------------
     # Display help
     # -----------------------------------------
     def show_help(self):
-        print ("This PyBison parser implements a basic scientific calculator")
-        print (" * scientific notation now works for numbers, eg '2.3e+12'")
-        print (" * you can assign values to variables, eg 'x = 23.2'")
-        print (" * the constants 'pi' and 'e' are supported")
-        print (" * all the python 'math' module functions are available, eg 'sin(pi/6)'")
-        print (" * errors, such as division by zero, are now reported")
+        print("This PyBison parser implements a basic scientific calculator")
+        print(" * scientific notation now works for numbers, eg '2.3e+12'")
+        print(" * you can assign values to variables, eg 'x = 23.2'")
+        print(" * the constants 'pi' and 'e' are supported")
+        print(" * all the python 'math' module functions are available, eg 'sin(pi/6)'")
+        print(" * errors, such as division by zero, are now reported")
 
     # -----------------------------------------
     # raw lex script, verbatim here
     # -----------------------------------------
     lexscript = r"""
     %{
-    //int yylineno = 0;
+    int yylineno = 0;
     #include <stdio.h>
     #include <string.h>
     #include "Python.h"
@@ -231,7 +248,7 @@ class Parser(BisonParser):
     "**"   { returntoken(POW); }
     "/"    { returntoken(DIVIDE); }
     "%"    { returntoken(MOD); }
-    "quit" { printf("lex: got QUIT\n"); yyterminate(); returntoken(QUIT); }
+    "quit" { printf("lex: got QUIT\n"); returntoken(QUIT); }
     "="    { returntoken(EQUALS); }
     "e"    { returntoken(E); }
     "pi"   { returntoken(PI); }
@@ -239,7 +256,7 @@ class Parser(BisonParser):
     [a-zA-Z_][0-9a-zA-Z_]* { returntoken(IDENTIFIER); }
     
     [ \t\v\f]             {}
-    [\n]		{yylineno++; returntoken(NEWLINE); }
+    [\n]        {yylineno++; returntoken(NEWLINE); }
     .       { printf("unknown char %c ignored, yytext=0x%lx\n", yytext[0], yytext); /* ignore bad chars */}
     
     %%
@@ -249,5 +266,5 @@ class Parser(BisonParser):
 
 if __name__ == '__main__':
     p = Parser(keepfiles=0)
-    print ("Scientific calculator example. Type 'help' for help")
+    print("Scientific calculator example. Type 'help' for help")
     p.run()

@@ -69,6 +69,7 @@ import distutils.sysconfig
 import distutils.ccompiler
 
 
+# os.unlink = lambda x: x # What for?
 reSpaces = re.compile("\\s+")
 
 #unquoted = r"""^|[^'"]%s[^'"]?"""
@@ -137,7 +138,6 @@ cdef class ParserEngine:
         """
         parser = self.parser
         verbose = parser.verbose
-
         if verbose:
             distutils.log.set_verbosity(1)
 
@@ -275,6 +275,7 @@ cdef class ParserEngine:
             'void (*py_input)(void *, char *, int *, int);',
             'void *py_parser;',
             'char *rules_hash = "%s";' % self.parserHash,
+            # '__declspec(dllexport) char *rules_hash = "%s";' % self.parserHash,
             '#define YYERROR_VERBOSE 1',
             '',
             '}',
@@ -387,7 +388,8 @@ cdef class ParserEngine:
                         action = action + "             Py_INCREF(Py_None);\n"
                         action = action + "             yyclearin;\n"
 
-                    action = action + self.generate_exception_handler()
+                    else:
+                        action = action + self.generate_exception_handler()
 
                     action = action + '        }\n'
 
@@ -402,6 +404,7 @@ cdef class ParserEngine:
         # now generate C code
         epilogue = '\n'.join([
             'void do_parse(void *parser1,',
+            # '__declspec(dllexport) void do_parse(void *parser1,',
             '              void *(*cb)(void *, char *, int, int, ...),',
             '              void (*in)(void *, char*, int *, int),',
             '              int debug',
@@ -415,7 +418,9 @@ cdef class ParserEngine:
             '}',
             '',
             'int yyerror(char *msg)',
-            '{',
+            '{ fprintf(stderr, "error!\\n");',
+            '  PyObject *error = PyErr_Occurred();',
+            '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
             '                                        "report_syntax_error");',
             '  if (!fn)',
@@ -462,8 +467,19 @@ cdef class ParserEngine:
         f.close()
 
         # create and set up a compiler object
-        env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
-        env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+        if sys.platform == 'win32':
+            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+            env.initialize()
+            env.set_include_dirs([distutils.sysconfig.get_python_inc(),
+                                  r'D:\Tools\VC14\include',
+                                  r'D:\Tools\VC14\sdk\include'])
+            env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
+            env.set_library_dirs([os.path.join(sys.prefix, 'libs'),
+                                  r'D:\Tools\VC14\lib\amd64',
+                                  r'D:\Tools\VC14\sdk\lib\x64',])
+        else:
+            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+            env.set_include_dirs([distutils.sysconfig.get_python_inc()])
 
         # -----------------------------------------
         # Now run bison on the grammar file
@@ -528,7 +544,6 @@ cdef class ParserEngine:
                            extra_preargs=parser.cflags_pre,
                            extra_postargs=parser.cflags_post,
                            debug=parser.debugSymbols)
-
         libFileName = buildDirectory + parser.bisonEngineLibName \
                       + imp.get_suffixes()[0][0]
 
@@ -539,18 +554,12 @@ cdef class ParserEngine:
             os.rename(libFileName, libFileName+".bak")
 
         if parser.verbose:
-            print ('linking: %s => %s' % (', '.join(objs), libFileName))
-
-        if sys.platform.startswith('darwin'):
-            # on OSX, ld throws undefined symbol for shared library references
-            # however, we would like to link against libpython dynamically, so that
-            # the built .so will not depend on which python interpreter it runs on
-            env.linker_so += ['-undefined', 'dynamic_lookup']
+            print 'linking: %s => %s' % (', '.join(objs), libFileName)
 
         env.link_shared_object(objs, libFileName)
 
         #cdef char *incdir
-        #incdir = PyUnicode_AsString(get_python_inc())
+        #incdir = PyString_AsString(get_python_inc())
         #bisondynlib_build(self.libFilename_py, incdir)
 
         # --------------------------------------------
@@ -567,7 +576,7 @@ cdef class ParserEngine:
                     fname = buildDirectory + getattr(parser, name)
                 else:
                     fname = None
-                #print ("want to delete %s" % fname)
+                #print "want to delete %s" % fname
                 if fname and os.path.isfile(fname):
                     hitlist.append(fname)
 
@@ -576,7 +585,7 @@ cdef class ParserEngine:
                 try:
                     os.unlink(f)
                 except:
-                    print ("Warning: failed to delete temporary file %s" % f)
+                    print "Warning: failed to delete temporary file %s" % f
 
         if parser.verbose:
             print ('deleting temporary bison output files:')
@@ -609,7 +618,12 @@ cdef class ParserEngine:
         cbvoid = <void *>py_callback
         invoid = <void *>py_input
 
-        return bisondynlib_run(handle, parser, cbvoid, invoid, debug)
+        try:
+            ret = bisondynlib_run(handle, parser, cbvoid, invoid, debug)
+        except Exception as e:
+            print(e)
+            ret=None
+        return ret
 
     def __del__(self):
         """
@@ -624,11 +638,11 @@ def cmpLines(meth1, meth2):
     the order of their declaration in their source file.
     """
     try:
-        line1 = meth1.func_code.co_firstlineno
-        line2 = meth2.func_code.co_firstlineno
+        line1 = meth1.__code__.co_firstlineno
+        line2 = meth2.__code__.co_firstlineno
     except:
-        line1 = meth1.__init__.func_code.co_firstlineno
-        line2 = meth2.__init__.func_code.co_firstlineno
+        line1 = meth1.__init__.__code__.co_firstlineno
+        line2 = meth2.__init__.__code__.co_firstlineno
 
     return (line1 > line2) - (line1 < line2)
 
@@ -702,7 +716,7 @@ def hashParserObject(parser):
     # now add in the methods' docstrings
     for h in handlers:
         docString = h.__doc__
-        update(docString)
+        hasher.update(docString)
 
     # done
     return hasher.hexdigest()

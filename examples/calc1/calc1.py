@@ -20,7 +20,7 @@ class Parser(BisonParser):
     debugSymbols=True
     keepfiles = True
     import os
-    os.environ['LINK'] = '/debug'
+    #os.environ['LINK'] = '/debug'
     # ----------------------------------------------------------------
     # lexer tokens - these must match those in your lex script (below)
     # ----------------------------------------------------------------
@@ -52,9 +52,9 @@ class Parser(BisonParser):
     # ------------------------------------------------------------------
     def read(self, nbytes):
         try:
-            return (input("> ") + "\n").encode('ascii')
+            return input("> ") + "\n"
         except EOFError:
-            return b''
+            return ''
 
     # -----------------------------------------------------------
     # override default run method to set up our variables storage
@@ -186,7 +186,7 @@ class Parser(BisonParser):
         """
         functioncall : IDENTIFIER LPAREN exp RPAREN
         """
-        print(values)
+        # print(values)
         func = getattr(math, values[0], None)
         if not callable(func):
             return self.error("No such function '%s'" % values[0])
@@ -224,7 +224,7 @@ class Parser(BisonParser):
     # -----------------------------------------
     lexscript = r"""
     %{
-    int yylineno = 0;
+    //int yylineno = 0;
     #include <stdio.h>
     #include <string.h>
     #include "Python.h"

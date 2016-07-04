@@ -554,7 +554,7 @@ cdef class ParserEngine:
             os.rename(libFileName, libFileName+".bak")
 
         if parser.verbose:
-            print 'linking: %s => %s' % (', '.join(objs), libFileName)
+            print ('linking: %s => %s' % (', '.join(objs), libFileName))
 
         env.link_shared_object(objs, libFileName)
 
@@ -576,7 +576,7 @@ cdef class ParserEngine:
                     fname = buildDirectory + getattr(parser, name)
                 else:
                     fname = None
-                #print "want to delete %s" % fname
+                #print ("want to delete %s" % fname)
                 if fname and os.path.isfile(fname):
                     hitlist.append(fname)
 
@@ -585,7 +585,7 @@ cdef class ParserEngine:
                 try:
                     os.unlink(f)
                 except:
-                    print "Warning: failed to delete temporary file %s" % f
+                    print ("Warning: failed to delete temporary file %s" % f)
 
         if parser.verbose:
             print ('deleting temporary bison output files:')
@@ -716,7 +716,7 @@ def hashParserObject(parser):
     # now add in the methods' docstrings
     for h in handlers:
         docString = h.__doc__
-        hasher.update(docString)
+        update(docString)
 
     # done
     return hasher.hexdigest()

@@ -128,11 +128,11 @@ class Parser(BisonParser):
 #include "Python.h"
 #define YYSTYPE void *
 #include "tokens.h"
-int yylineno = 0;
+//int yylineno = 0;
 int yywrap() { return(1); }
 extern void *py_parser;
 extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-#define returntoken(tok) yylval = PyString_FromString(strdup(yytext)); return (tok);
+#define returntoken(tok) yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
 #define YY_INPUT(buf,result,max_size) { (*py_input)(py_parser, buf, &result, max_size); }
 %}
 

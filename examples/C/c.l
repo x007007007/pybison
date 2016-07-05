@@ -11,7 +11,7 @@ IS			(u|U|l|L)*
 /* this scanner sourced from: http://www.lysator.liu.se/c/ANSI-C-grammar-l.html */
 
 void count();
-int yylineno = 0;
+//int yylineno = 0;
 #include <stdio.h>
 #include <string.h>
 #include "Python.h"

@@ -58,4 +58,8 @@ setup(
         #py_modules=['node', 'xmlifier', 'convert'],
         cmdclass={'build_ext': build_ext},
         scripts=[bison2pyscript],
+        install_requires=[
+            "cython",
+            "six"
+        ],
         )

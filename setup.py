@@ -37,7 +37,7 @@ else:
     sys.exit(1)
 
 setup(
-        name='bison',
+        name='pybison',
         version=version,
         description='Python bindings for bison/flex parser engine',
         author='David McNab <david@freenet.org.nz>',
@@ -53,7 +53,7 @@ setup(
                 )
             ],
         #packages=find_packages(),
-        packages=['bison'],
+        packages=['pybison'],
         package_dir={'': 'src'},
         #py_modules=['node', 'xmlifier', 'convert'],
         cmdclass={'build_ext': build_ext},

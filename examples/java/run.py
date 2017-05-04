@@ -25,7 +25,7 @@ if argc == 2:
 else:
     src = None
 
-src = "I2PClient.java"
+src = "HelloWorldApp.java"
 
 p = javaparser.Parser(verbose=verbose)
 

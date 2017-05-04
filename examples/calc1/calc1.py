@@ -224,7 +224,6 @@ class Parser(BisonParser):
     # -----------------------------------------
     lexscript = r"""
     %{
-    //int yylineno = 0;
     #include <stdio.h>
     #include <string.h>
     #include "Python.h"
@@ -256,7 +255,7 @@ class Parser(BisonParser):
     [a-zA-Z_][0-9a-zA-Z_]* { returntoken(IDENTIFIER); }
     
     [ \t\v\f]             {}
-    [\n]        {yylineno++; returntoken(NEWLINE); }
+    [\n]		{yylineno++; returntoken(NEWLINE); }
     .       { printf("unknown char %c ignored, yytext=0x%lx\n", yytext[0], yytext); /* ignore bad chars */}
     
     %%

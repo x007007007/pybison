@@ -355,5 +355,5 @@ class BisonParser(object):
     def report_syntax_error(self, msg, yytext, first_line, first_col,
             last_line, last_col):
         yytext = yytext.replace('\n', '\\n')
-        args = (first_line, first_col, last_line, last_col, msg, yytext)
-        raise BisonSyntaxError('%d.%d-%d.%d: "%s" near "%s".' % args, args)
+        args = (msg, yytext, first_line, first_col, last_line, last_col)
+        raise BisonSyntaxError('\033[1m\033[31mError:\033[0m %s \n\t \033[34m└ near \033[1m"%s"\033[0m\033[34m (see \033[39m\033[1mline %d, pos %d to line %d, pos %d\033[0m\033[34m).\033[0m' % args, args)

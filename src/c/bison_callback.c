@@ -45,6 +45,7 @@ static PyObject *py_attr_hook_read_before_name;
 static PyObject *py_attr_handle_name;
 static PyObject *py_attr_read_name;
 static PyObject *py_attr_file_name;
+static PyObject *py_attr_input_marker;
 static PyObject *py_attr_close_name;
 
 // Construct attribute names (only the first time)
@@ -154,6 +155,7 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size)
     INIT_ATTR(py_attr_hook_read_before_name, "hook_read_before", return);
     INIT_ATTR(py_attr_read_name, "read", return);
     INIT_ATTR(py_attr_file_name, "file", return);
+    INIT_ATTR(py_attr_input_marker, "marker", return);
     INIT_ATTR(py_attr_close_name, "close", return);
 
     // Check if the "hook_READ_BEFORE" callback exists
@@ -232,16 +234,35 @@ finish_input:
     // associated C stream (which is not necessary here, otherwise use
     // "os.close(0)").
     if (!*result && PyObject_HasAttr(parser, py_attr_file_name)) {
-        PyObject *file_handle = PyObject_GetAttr(parser, py_attr_file_name);
-        if (unlikely(!file_handle)) return;
+        // don't mark the file as closed
+        // set a marker that there is no more input
+        PyObject *marker_handle = PyObject_GetAttr(parser, py_attr_input_marker);
+        if (unlikely(!marker_handle)) return;
+        // create a int object containing a '1'
+        PyObject* po_long1 = PyLong_FromLong(1);
+        // execute attribute setting
+        int success = PyObject_SetAttr(parser, py_attr_input_marker, po_long1);
+        if (success != 0)
+            return;
+        Py_DECREF(marker_handle);
+        Py_DECREF(po_long1);
+        return;
 
+        // get the 'file' attribute from the parser
+        PyObject *file_handle = PyObject_GetAttr(parser, py_attr_file_name);
+        // check if BisonParser['file'] was set
+        if (unlikely(!file_handle)) return;
+        // get the handle for file.close operation
         handle = PyObject_GetAttr(file_handle, py_attr_close_name);
+        // delete file attribute pointer
         Py_DECREF(file_handle);
+        // check of BisonParser['file'] has handle 'close'
         if (unlikely(!handle)) return;
 
+        // get argument to pass to 'close' operation
         arglist = PyTuple_New(0);
         if (unlikely(!arglist)) { Py_DECREF(handle); return; }
-
+        // actually execute BisonParser['file'].close(0)
         res = PyObject_CallObject(handle, arglist);
 
         Py_XDECREF(res);

@@ -202,7 +202,6 @@ cdef class ParserEngine:
 
     def generate_exception_handler(self):
         s = ''
-
         s += '          {\n'
         s += '            PyObject* obj = PyErr_Occurred();\n'
         s += '            if (obj) {\n'
@@ -466,6 +465,7 @@ cdef class ParserEngine:
         f.write('\n'.join(tmp) + '\n')
         f.close()
 
+        # TODO: WTF is this?
         # create and set up a compiler object
         if sys.platform == 'win32':
             env = distutils.ccompiler.new_compiler(verbose=parser.verbose)

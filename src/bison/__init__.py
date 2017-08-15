@@ -23,8 +23,11 @@ import sys
 import traceback
 
 from bison_ import ParserEngine
+from os import makedirs
+
 from .node import BisonNode
 from .convert import bisonToPython
+
 
 class BisonSyntaxError(Exception):
     def __init__(self, msg, args=[]):
@@ -33,6 +36,7 @@ class BisonSyntaxError(Exception):
         if args:
             self.first_line, self.first_col, self.last_line, self.last_col, \
                     self.message, self.token_value = args
+
 
 class TimeoutError(Exception):
     pass
@@ -94,11 +98,14 @@ class BisonParser(object):
     # Default to sys.stdin.
     file = None
 
+    # Create a marker for input parsing.
+    marker = 0
+
     # Last parsed target, top of parse tree.
     last = None
 
     # Enable this to keep all temporary engine build files.
-    keepfiles = 0
+    keepfiles = 1
 
     # Prefix of the shared object / dll file. Defaults to 'modulename-engine'.
     # If the module is executed directly, "__main__" will be used (since that
@@ -128,6 +135,9 @@ class BisonParser(object):
             - defaultNodeClass - the class to use for creating parse nodes, default
               is self.defaultNodeClass (in this base class, BisonNode)
         """
+        self.buildDirectory = './pybison-' + type(self).__name__ + '/'
+        makedirs(self.buildDirectory, exist_ok=True)
+
         # setup
         read = kw.get('read', None)
         if read:
@@ -195,7 +205,7 @@ class BisonParser(object):
             #          % (targetname, repr(self.last)))
         else:
             if self.verbose:
-                print ('no handler for %s, using default' % targetname)
+                print('no handler for %s, using default' % targetname)
 
             cls = self.default_node_class
             self.last = cls(target=targetname, option=option, names=names,
@@ -208,6 +218,7 @@ class BisonParser(object):
         raise TimeoutError('Computation exceeded timeout limit.')
 
     def reset(self):
+        self.marker = 0
         self.engine.reset()
 
     def run(self, **kw):
@@ -223,11 +234,13 @@ class BisonParser(object):
             print('Parser.run: calling engine')
 
         # grab keywords
+        i_opened_a_file = False
         fileobj = kw.get('file', self.file)
         if isinstance(fileobj, str):
             filename = fileobj
             try:
                 fileobj = open(fileobj, 'rb')
+                i_opened_a_file = True
             except:
                 raise Exception('Cannot open input file "%s"' % fileobj)
         else:
@@ -248,15 +261,15 @@ class BisonParser(object):
         if read:
             self.read = read
 
-        if self.verbose and self.file.closed:
-            print('Parser.run(): self.file', self.file, 'is closed')
+        if self.verbose and self.marker:
+            print('Parser.run(): self.marker (', self.marker, ') is set')
 
         error_count = 0
+        self.last = None
 
         # TODO: add option to fail on first error.
-        while not self.file.closed:
+        while not self.marker:
             # do the parsing job, spew if error
-            self.last = None
             self.engine.reset()
 
             try:
@@ -275,7 +288,7 @@ class BisonParser(object):
             if hasattr(self, 'hook_run'):
                 self.last = self.hook_run(filename, self.last)
 
-            if self.verbose and not self.file.closed:
+            if self.verbose and not self.marker:
                 print('last:', self.last)
 
         if self.verbose:
@@ -284,9 +297,14 @@ class BisonParser(object):
         # restore old values
         self.file = oldfile
         self.read = oldread
+        self.marker = 0
 
         if self.verbose:
             print('------------------ result=', self.last)
+
+        # close the file if we opened one
+        if i_opened_a_file and fileobj:
+            fileobj.close()
 
         # TODO: return last result (see while loop):
         # return self.last[:-1]
@@ -305,13 +323,13 @@ class BisonParser(object):
         if self.verbose:
             print('Parser.read: want %s bytes' % nbytes)
 
-        bytes = self.file.readline(nbytes)
+        _bytes = self.file.readline(nbytes)
 
         if self.verbose:
-            print('Parser.read: got %s bytes' % len(bytes))
-            print(bytes)
+            print('Parser.read: got %s bytes' % len(_bytes))
+            print(_bytes)
 
-        return bytes
+        return _bytes
 
     def report_last_error(self, filename, error):
         """
@@ -328,22 +346,22 @@ class BisonParser(object):
 
         """
 
-        #if filename != None:
-        #    msg = '%s:%d: "%s" near "%s"' \
-        #            % ((filename,) + error)
+        # if filename != None:
+        #     msg = '%s:%d: "%s" near "%s"' \
+        #             % ((filename,) + error)
 
-        #    if not self.interactive:
-        #        raise BisonSyntaxError(msg)
+        #     if not self.interactive:
+        #         raise BisonSyntaxError(msg)
 
-        #    print >>sys.stderr, msg
-        #elif hasattr(error, '__getitem__') and isinstance(error[0], int):
-        #    msg = 'Line %d: "%s" near "%s"' % error
+        #     print >>sys.stderr, msg
+        # elif hasattr(error, '__getitem__') and isinstance(error[0], int):
+        #     msg = 'Line %d: "%s" near "%s"' % error
 
-        #    if not self.interactive:
-        #        raise BisonSyntaxError(msg)
+        #     if not self.interactive:
+        #         raise BisonSyntaxError(msg)
 
-        #    print >>sys.stderr, msg
-        #else:
+        #     print >>sys.stderr, msg
+        # else:
         if not self.interactive:
             raise
 
@@ -352,8 +370,30 @@ class BisonParser(object):
 
         print('ERROR:', error)
 
-    def report_syntax_error(self, msg, yytext, first_line, first_col,
-            last_line, last_col):
+    def report_syntax_error(self, msg, yytext, first_line, first_col, last_line, last_col):
+
+        def color_white(txt):
+            return "\033[39m" + txt
+
+        def color_red(txt):
+            return "\033[31m" + txt
+
+        def color_blue(txt):
+            return "\033[34m" + txt
+
+        def make_bold(txt):
+            return "\033[1m" + txt
+
+        def reset_style(txt):
+            return "\033[0m" + txt
+
         yytext = yytext.replace('\n', '\\n')
         args = (msg, yytext, first_line, first_col, last_line, last_col)
-        raise BisonSyntaxError('\033[1m\033[31mError:\033[0m %s \n\t \033[34m└ near \033[1m"%s"\033[0m\033[34m (see \033[39m\033[1mline %d, pos %d to line %d, pos %d\033[0m\033[34m).\033[0m' % args, args)
+        err_msg = ''.join([
+            color_red(make_bold("Error: ")), reset_style("%s"), "\n", "\t ",
+            color_blue("└ near "), make_bold('"%s"'),
+            reset_style(color_blue(" (see ")),
+            color_white(make_bold("line %d, pos %d to line %d, pos %d")),
+            reset_style(color_blue(").")), reset_style('')
+        ])
+        raise BisonSyntaxError(err_msg % args, list(args))

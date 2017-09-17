@@ -309,6 +309,8 @@ cdef class ParserEngine:
 
         write("\n\n%%\n\n")
 
+        write(parser.raw_c_rules)
+
         # carve up docstrings
         rules = []
         for h in gHandlers:

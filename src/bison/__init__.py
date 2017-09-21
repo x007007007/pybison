@@ -19,11 +19,13 @@ for a commercial license.
 
 from __future__ import absolute_import
 from __future__ import print_function
+
+import shutil
 import sys
 import traceback
 
 from bison_ import ParserEngine
-from os import makedirs
+from os import makedirs, removedirs
 
 from .node import BisonNode
 from .convert import bisonToPython
@@ -54,7 +56,7 @@ class BisonParser(object):
     # override these if you need to
 
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = ['bison', '-d']
+    bisonCmd = ['bison', '-d', '--debug']
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -135,7 +137,11 @@ class BisonParser(object):
             - defaultNodeClass - the class to use for creating parse nodes, default
               is self.defaultNodeClass (in this base class, BisonNode)
         """
+        self.debug = kw.get('debug', 0)
+
         self.buildDirectory = './pybison-' + type(self).__name__ + '/'
+        if self.debug:
+            shutil.rmtree(self.buildDirectory)
         makedirs(self.buildDirectory, exist_ok=True)
 
         # setup
@@ -161,10 +167,6 @@ class BisonParser(object):
         self.verbose = kw.get('verbose', 0)
         if self.verbose:
             self.bisonCmd.append('--verbose')
-
-        self.debug = kw.get('debug', 0)
-        if self.debug:
-            self.bisonCmd.append('--debug')
 
         if 'keepfiles' in kw:
             self.keepfiles = kw['keepfiles']

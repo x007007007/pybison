@@ -54,7 +54,7 @@ class BisonParser(object):
     # override these if you need to
 
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = ['bison', '-d', '-v', '-t']
+    bisonCmd = ['bison', '-d']
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -159,6 +159,12 @@ class BisonParser(object):
             self.defaultNodeClass = nodeClass
 
         self.verbose = kw.get('verbose', 0)
+        if self.verbose:
+            self.bisonCmd.append('--verbose')
+
+        self.debug = kw.get('debug', 0)
+        if self.debug:
+            self.bisonCmd.append('--debug')
 
         if 'keepfiles' in kw:
             self.keepfiles = kw['keepfiles']

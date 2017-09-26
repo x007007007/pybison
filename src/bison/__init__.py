@@ -25,7 +25,7 @@ import sys
 import traceback
 
 from bison_ import ParserEngine
-from os import makedirs, removedirs
+from os import makedirs
 
 from .node import BisonNode
 from .convert import bisonToPython
@@ -208,7 +208,7 @@ class BisonParser(object):
                 self.last = e
                 return e
 
-            #if self.verbose:
+            # if self.verbose:
             #    print ('handler for %s returned %s' \
             #          % (targetname, repr(self.last)))
         else:

@@ -11,7 +11,7 @@ Needs sudo for the installation of the following dependencies:
 - **apt-get:** bison, flex
     - `sudo apt install bison flex`
 - **pip3**: cython, six, pyrex, pybison itself
-    - `sudo -H pip3 install -U cython six pyrex pybison`
+    - `sudo -H pip3 install -U cython six pyrex`
 
 Install with:
 ```bash

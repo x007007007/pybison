@@ -124,6 +124,15 @@ cdef class ParserEngine:
 
         self.openCurrentLib()
 
+    @staticmethod
+    def distutils_dir_name(dname):
+        import sysconfig, sys
+        """Returns the name of a distutils build directory"""
+        f = "{dirname}.{platform}-{version[0]}.{version[1]}"
+        return f.format(dirname=dname,
+                        platform=sysconfig.get_platform(),
+                        version=sys.version_info)
+
     def reset(self):
         """
         Reset Flex's buffer and state.
@@ -363,7 +372,7 @@ cdef class ParserEngine:
                     if 'error' in option:
                         action = action + "             yyerrok;\n"
                     action = action + '          $$ = (*py_callback)(\n            py_parser, "%s", %s, %%s' % \
-                             (rule[0], idx) # note we're deferring the substitution of 'nterms' (last arg)
+                                      (rule[0], idx) # note we're deferring the substitution of 'nterms' (last arg)
                     args = []
                     i = -1
 
@@ -419,7 +428,7 @@ cdef class ParserEngine:
             '}',
             '',
             'int yyerror(char *msg)',
-            '{', 
+            '{',
             '  PyObject *error = PyErr_Occurred();',
             '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
@@ -448,7 +457,7 @@ cdef class ParserEngine:
             '  Py_DECREF(res);',
             '  return 0;',
             '}',
-            ]) + '\n'
+        ]) + '\n'
         write(epilogue)
 
         # done with grammar file
@@ -496,9 +505,9 @@ cdef class ParserEngine:
         if parser.verbose:
             print ('renaming bison output files')
             print ('%s => %s%s' % (parser.bisonCFile, buildDirectory,
-                                  parser.bisonCFile1))
+                                   parser.bisonCFile1))
             print ('%s => %s%s' % (parser.bisonHFile, buildDirectory,
-                                  parser.bisonHFile1))
+                                   parser.bisonHFile1))
 
         if os.path.isfile(buildDirectory + parser.bisonCFile1):
             os.unlink(buildDirectory + parser.bisonCFile1)
@@ -525,7 +534,7 @@ cdef class ParserEngine:
 
         if parser.verbose:
             print ('%s => %s%s' % (parser.flexCFile, buildDirectory,
-                                  parser.flexCFile1))
+                                   parser.flexCFile1))
 
         shutil.copy(parser.flexCFile, buildDirectory + parser.flexCFile1)
 
@@ -540,25 +549,80 @@ cdef class ParserEngine:
         #cc.compile(['bisondynlib-win32.c'],
         #           extra_preargs=['/DWIN32', '/G4', '/Gs', '/Oit', '/MT', '/nologo', '/W3', '/WX', '/Id:\python23\include'])
 
+        ####################################
+        ####################################
+        ####################################
+        ####################################
+        print("PKG")
+
+        from distutils.core import Extension, Distribution
+        from distutils.command.build import build
+        import fnmatch
+
+        shared_lib = Extension(
+            parser.bisonEngineLibName,
+            sources = [
+                buildDirectory + parser.bisonCFile1,
+                buildDirectory + parser.flexCFile1
+            ]
+        )
+
+        dist = Distribution(dict(
+            name = parser.bisonEngineLibName + '-Distribution',
+            version = '1.0',
+            description = 'This is a wrapper package to build custom parser c library.',
+            ext_modules = [shared_lib],
+            # Add prefix for the build dir
+            options={
+                'build': {
+                    'build_base': buildDirectory
+                }
+            }
+        ))
+
+        cmd = build(dist)
+        cmd.run()
+
+        so_dir = os.path.join(buildDirectory, self.distutils_dir_name('lib'))
+        print("so_dir", so_dir)
+
+        filenames = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(so_dir) for f in fnmatch.filter(files, '*.so')]
+
+        if len(filenames) != 1:
+            raise RuntimeError("Found multiple shared objects for current platform.")
+        libFileName = filenames[0]
+        self.libFilename_py = libFileName
+
+        tmp_dir = os.path.join(buildDirectory, self.distutils_dir_name('temp'))
+        shutil.rmtree(tmp_dir)
+
+        print("RUNRUNRUN")
+
+
+        ####################################
+        ####################################
+        ####################################
+        ####################################
+
         # link 'em into a shared lib
-        objs = env.compile([buildDirectory + parser.bisonCFile1,
-                            buildDirectory + parser.flexCFile1],
-                           extra_preargs=parser.cflags_pre,
-                           extra_postargs=parser.cflags_post,
-                           debug=parser.debugSymbols)
-        libFileName = buildDirectory + parser.bisonEngineLibName \
-                      + imp.get_suffixes()[0][0]
+        objs = []
+        # objs = env.compile([buildDirectory + parser.bisonCFile1,
+        #                     buildDirectory + parser.flexCFile1],
+        #                    extra_preargs=parser.cflags_pre,
+        #                    extra_postargs=parser.cflags_post,
+        #                    debug=parser.debugSymbols)
+        # libFileName = buildDirectory + parser.bisonEngineLibName + imp.get_suffixes()[0][0]
 
-        if os.path.isfile(libFileName+".bak"):
-            os.unlink(libFileName+".bak")
+        # if os.path.isfile(libFileName+".bak"):
+        #     os.unlink(libFileName+".bak")
 
-        if os.path.isfile(libFileName):
-            os.rename(libFileName, libFileName+".bak")
+        # if os.path.isfile(libFileName):
+        #     os.rename(libFileName, libFileName+".bak")
 
-        if parser.verbose:
-            print ('linking: %s => %s' % (', '.join(objs), libFileName))
+        # if parser.verbose:
+        #     print ('linking: %s => %s' % (', '.join(objs), libFileName))
 
-        env.link_shared_object(objs, libFileName)
+        # env.link_shared_object(objs, libFileName)
 
         #cdef char *incdir
         #incdir = PyString_AsString(get_python_inc())
@@ -566,8 +630,8 @@ cdef class ParserEngine:
 
         # --------------------------------------------
         # clean up, if we succeeded
-        hitlist = objs[:]
-        hitlist.append("tmp.output")
+        # hitlist = objs[:]
+        hitlist = []
 
         if os.path.isfile(libFileName):
             for name in ['bisonFile', 'bisonCFile', 'bisonHFile',
@@ -578,7 +642,6 @@ cdef class ParserEngine:
                     fname = buildDirectory + getattr(parser, name)
                 else:
                     fname = None
-                #print ("want to delete %s" % fname)
                 if fname and os.path.isfile(fname):
                     hitlist.append(fname)
 
@@ -592,7 +655,7 @@ cdef class ParserEngine:
         if parser.verbose:
             print ('deleting temporary bison output files:')
 
-        for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile]:
+        for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile, "tmp.output"]:
             if parser.verbose:
                 print ('rm %s' % f)
 

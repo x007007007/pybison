@@ -1,5 +1,4 @@
-
-Version 0.1.7:
+## Version 0.1.7:
 
     2004-04-30:
 
@@ -7,20 +6,20 @@ Version 0.1.7:
         - Added support for error-handling rules
         - Added support for rule handlers to raise errors
 
-Version 0.1.6:
+## Version 0.1.6:
 
     2004-04-30:
 
         - Added ANSI C parser to examples
 
-Version 0.1.5:
+## Version 0.1.5:
 
     2004-04-30:
 
         - Added XML support - can now export and import parse trees to/from
           XML strings or xml.dom.minidom objects
 
-Version 0.1.4:
+## Version 0.1.4:
 
     2004-04-29:
     
@@ -31,7 +30,7 @@ Version 0.1.4:
 
         - tidied up and fleshed out the walkthrough document
 
-Version 0.1.3:
+## Version 0.1.3:
 
     2004-04-28:
     
@@ -48,7 +47,7 @@ Version 0.1.3:
 
         - various other fixes and tidy-ups
 
-Version 0.1.2:
+## Version 0.1.2:
 
     2004-04-25:
 
@@ -61,7 +60,7 @@ Version 0.1.2:
         - added '-c' option to bison2py utility, which causes the generation
           of handler code as separate node classes instead of methods
 
-Version 0.1.1:
+## Version 0.1.1:
 
     2004-04-23:
     
@@ -72,9 +71,8 @@ Version 0.1.1:
         
         - added java parser example
 
-Version 0.1.0:
+## Version 0.1.0:
 
     2004-04-23:
     
         - first release
-

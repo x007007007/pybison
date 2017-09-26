@@ -9,25 +9,26 @@ I just added the one-line installation-script and colorfied the syntax-errors th
 ### Global Python Installation (sudo needed)
 Needs sudo for the installation of the following dependencies:
 - **apt-get:** bison, flex
+    - `sudo apt install bison flex`
 - **pip3**: cython, six, pyrex, pybison itself
+    - `pip3 install -U cython six pyrex pybison`
 
 Install with:
-```sh
+```bash
 curl -s https://raw.githubusercontent.com/da-h/pybison/master/install_global.sh | bash
 ```
 
 ### Virtualenv Python Installation (no sudo needed)
 First, install the dependencies
-```sh
+```bash
 sudo apt-get install bison flex
 ```
 Now, install with:
-```sh
+```bash
 curl -s https://raw.githubusercontent.com/da-h/pybison/master/install_venv.sh | bash
 ```
 
-
-
+----------------------------------------------------------
 
 For further information, please read the following original **README**:  
 
@@ -67,6 +68,5 @@ The other frameworks utilise a fiddly script syntax -
    
 ## How do I use this?
 
-Refer to the INSTALL file for setting up.  
-Refer to the examples and the doco for usage.
-
+Refer to the [INSTALL](INSTALL.md) file for setting up.  
+Refer to the [examples](examples) and the [docs](docs) for usage.

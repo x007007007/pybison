@@ -67,6 +67,8 @@ import sys, os, hashlib, re, imp, traceback
 import shutil
 import distutils.sysconfig
 import distutils.ccompiler
+import shlex
+import subprocess
 
 
 # os.unlink = lambda x: x # What for?
@@ -318,7 +320,8 @@ cdef class ParserEngine:
 
         write("\n\n%%\n\n")
 
-        write(parser.raw_c_rules)
+        if parser.raw_c_rules:
+            write(parser.raw_c_rules)
 
         # carve up docstrings
         rules = []
@@ -500,7 +503,11 @@ cdef class ParserEngine:
         if parser.verbose:
             print ('bison cmd:', ' '.join(bisonCmd))
 
-        env.spawn(bisonCmd)
+        # env.spawn(bisonCmd)
+        proc = subprocess.Popen(' '.join(bisonCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, err) = proc.communicate()
+        if proc.returncode:
+            raise Exception(err)
 
         if parser.verbose:
             print ('renaming bison output files')
@@ -527,7 +534,11 @@ cdef class ParserEngine:
         if parser.verbose:
             print ('flex cmd:', ' '.join(flexCmd))
 
-        env.spawn(flexCmd)
+        # env.spawn(flexCmd)
+        proc = subprocess.Popen(' '.join(flexCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, err) = proc.communicate()
+        if proc.returncode:
+            raise Exception(err)
 
         if os.path.isfile(buildDirectory + parser.flexCFile1):
             os.unlink(buildDirectory + parser.flexCFile1)
@@ -555,6 +566,7 @@ cdef class ParserEngine:
         ####################################
         print("PKG")
 
+        from sysconfig import get_paths
         from distutils.core import Extension, Distribution
         from distutils.command.build import build
         import fnmatch
@@ -564,7 +576,9 @@ cdef class ParserEngine:
             sources = [
                 buildDirectory + parser.bisonCFile1,
                 buildDirectory + parser.flexCFile1
-            ]
+            ],
+            include_dirs=[get_paths()['platinclude']],
+            library_dirs=[get_paths()['platlib']]
         )
 
         dist = Distribution(dict(

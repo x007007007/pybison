@@ -51,7 +51,7 @@ setup(
                 bisondynlibModule
             ],
             libraries=libs,
-            extra_compile_args=['-Wall', '-Wextra']
+            # extra_compile_args=['-Wall', '-Wextra']
         )
     ],
     packages=['bison'],

@@ -22,6 +22,7 @@ from __future__ import print_function
 
 import shutil
 import sys
+import os
 import traceback
 
 from bison_ import ParserEngine
@@ -55,8 +56,10 @@ class BisonParser(object):
     # ---------------------------------------
     # override these if you need to
 
+    raw_c_rules = ''
+
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = ['bison', '-d', '--debug']
+    bisonCmd = [os.path.sep.join(["C:","ProgramData","chocolatey","lib","winflexbison3","tools","win_bison.exe"]), '-d', '--debug']
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -71,7 +74,7 @@ class BisonParser(object):
     bisonHFile1 = 'tokens.h'
 
     # command and options for running [f]lex, except for filename arg.
-    flexCmd = ['flex', ]
+    flexCmd = ['C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_flex.exe', '-DYY_NO_UNISTD_H=false']
     flexFile = 'tmp.l'
     flexCFile = 'lex.yy.c'
 
@@ -85,7 +88,7 @@ class BisonParser(object):
     cflags_post = ['-O3', '-g']
 
     # Directory used to store the generated / compiled files.
-    buildDirectory = './'
+    buildDirectory = ''
 
     # Add debugging symbols to the binary files.
     debugSymbols = 1
@@ -139,7 +142,7 @@ class BisonParser(object):
         """
         self.debug = kw.get('debug', 0)
 
-        self.buildDirectory = './pybison-' + type(self).__name__ + '/'
+        self.buildDirectory = 'pybison-' + type(self).__name__ + os.path.sep
         if self.debug:
             shutil.rmtree(self.buildDirectory)
         makedirs(self.buildDirectory, exist_ok=True)

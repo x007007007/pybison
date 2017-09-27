@@ -59,7 +59,11 @@ class BisonParser(object):
     raw_c_rules = ''
 
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = [os.path.sep.join(["C:","ProgramData","chocolatey","lib","winflexbison3","tools","win_bison.exe"]), '-d', '--debug']
+    bisonCmd = [
+        os.path.sep.join(["C:", "ProgramData", "chocolatey", "lib", "winflexbison3", "tools", "win_bison.exe"]),
+        '-d',
+        '--debug'
+    ]
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -142,7 +146,7 @@ class BisonParser(object):
         """
         self.debug = kw.get('debug', 0)
 
-        self.buildDirectory = 'pybison-' + type(self).__name__ + os.path.sep
+        self.buildDirectory = 'pybison_' + type(self).__name__ + os.path.sep
         if self.debug:
             shutil.rmtree(self.buildDirectory)
         makedirs(self.buildDirectory, exist_ok=True)
@@ -176,7 +180,7 @@ class BisonParser(object):
 
         # if engine lib name not declared, invent ont
         if not self.bisonEngineLibName:
-            self.bisonEngineLibName = self.__class__.__module__ + '-parser'
+            self.bisonEngineLibName = self.__class__.__module__ + '_parser'
 
         # get an engine
         self.engine = ParserEngine(self)

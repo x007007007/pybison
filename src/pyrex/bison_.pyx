@@ -67,7 +67,6 @@ import sys, os, hashlib, re, imp, traceback
 import shutil
 import distutils.sysconfig
 import distutils.ccompiler
-import shlex
 import subprocess
 
 
@@ -171,6 +170,13 @@ cdef class ParserEngine:
             if verbose:
                 print ("Hashes match, no need to rebuild bison engine lib")
 
+    def open_lib_ctype(self):
+        import ctypes
+
+        handle = ctypes.pydll.LoadLibrary(self.libFilename_py)
+        hash = ctypes.c_wchar_p.in_dll(ctypes.pythonapi, "rules_hash")
+
+
     def openLib(self):
         """
         Loads the parser engine's dynamic library, and extracts the following
@@ -187,6 +193,11 @@ cdef class ParserEngine:
         use glib instead (or create windows equivalents), in which case I'd
         greatly appreciate you sending me a patch.
         """
+        self.open_lib_ctype()
+
+        print("THIS IS THE END")
+        exit(0)
+
         cdef char *libFilename
         cdef char *err
         cdef void *handle
@@ -566,10 +577,25 @@ cdef class ParserEngine:
         ####################################
         print("PKG")
 
-        from sysconfig import get_paths
         from distutils.core import Extension, Distribution
         from distutils.command.build import build
         import fnmatch
+        from importlib import machinery
+
+        print("parser.bisonCFile1", parser.bisonCFile1)
+
+        # windows wants to export some symbols
+        # https://stackoverflow.com/questions/34689210/error-exporting-symbol-when-building-python-c-extension-in-windows
+        with open(buildDirectory + parser.bisonCFile1, "a") as bisonfile:
+            bisonfile.write(
+                """
+                // PyMODINIT_FUNC initlibfoo(void) // Python 2
+                PyMODINIT_FUNC PyInit_{symbol}(void) // Python 3
+                {{
+                    return 0;
+                }}
+                """.format(symbol=parser.bisonEngineLibName)
+            )
 
         shared_lib = Extension(
             parser.bisonEngineLibName,
@@ -577,12 +603,13 @@ cdef class ParserEngine:
                 buildDirectory + parser.bisonCFile1,
                 buildDirectory + parser.flexCFile1
             ],
-            include_dirs=[get_paths()['platinclude']],
-            library_dirs=[get_paths()['platlib']]
+            include_dirs=["C:\Program Files\Python36\include"],
+            library_dirs=["C:\Program Files\Python36\libs"],
+            libraries=['python36']
         )
 
         dist = Distribution(dict(
-            name = parser.bisonEngineLibName + '-Distribution',
+            name = parser.bisonEngineLibName,
             version = '1.0',
             description = 'This is a wrapper package to build custom parser c library.',
             ext_modules = [shared_lib],
@@ -600,10 +627,10 @@ cdef class ParserEngine:
         so_dir = os.path.join(buildDirectory, self.distutils_dir_name('lib'))
         print("so_dir", so_dir)
 
-        filenames = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(so_dir) for f in fnmatch.filter(files, '*.so')]
+        filenames = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(so_dir) for f in fnmatch.filter(files, '*' + machinery.EXTENSION_SUFFIXES[0])]
 
         if len(filenames) != 1:
-            raise RuntimeError("Found multiple shared objects for current platform.")
+            raise RuntimeError("No/multiple shared objects found for current platform.")
         libFileName = filenames[0]
         self.libFilename_py = libFileName
 
@@ -662,19 +689,20 @@ cdef class ParserEngine:
         if not parser.keepfiles:
             for f in hitlist:
                 try:
-                    os.unlink(f)
+                    os.remove(f)
                 except:
-                    print ("Warning: failed to delete temporary file %s" % f)
+                    print("Warning: failed to delete temporary file {}".format(f))
+
+        print("HITLIST", ", ".join(hitlist))
 
         if parser.verbose:
-            print ('deleting temporary bison output files:')
+            print('deleting temporary bison output files:')
 
         for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile, "tmp.output"]:
-            if parser.verbose:
-                print ('rm %s' % f)
-
             if os.path.isfile(f):
-                os.unlink(f)
+                if parser.verbose:
+                    print('rm {}'.format(f))
+                os.remove(f)
 
     def closeLib(self):
         """

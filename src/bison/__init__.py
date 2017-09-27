@@ -59,11 +59,13 @@ class BisonParser(object):
     raw_c_rules = ''
 
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = [
-        os.path.sep.join(["C:", "ProgramData", "chocolatey", "lib", "winflexbison3", "tools", "win_bison.exe"]),
-        '-d',
-        '--debug'
-    ]
+    bisonCmd = []
+    if sys.platform == 'win32':
+        bisonCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_bison.exe')
+    else:
+        bisonCmd.append('bison')
+    bisonCmd.append('-d')
+    bisonCmd.append('--debug')
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -78,7 +80,13 @@ class BisonParser(object):
     bisonHFile1 = 'tokens.h'
 
     # command and options for running [f]lex, except for filename arg.
-    flexCmd = ['C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_flex.exe', '-DYY_NO_UNISTD_H=false']
+    flexCmd = []
+    if sys.platform == 'win32':
+        flexCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_flex.exe')
+        flexCmd.append('-DYY_NO_UNISTD_H=false')
+    else:
+        flexCmd = ['flex']
+
     flexFile = 'tmp.l'
     flexCFile = 'lex.yy.c'
 

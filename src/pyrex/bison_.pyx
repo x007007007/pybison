@@ -515,10 +515,13 @@ cdef class ParserEngine:
             print ('bison cmd:', ' '.join(bisonCmd))
 
         # env.spawn(bisonCmd)
-        proc = subprocess.Popen(' '.join(bisonCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(' '.join(bisonCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
         if proc.returncode:
             raise Exception(err)
+
+        if parser.verbose:
+            print(out)
 
         if parser.verbose:
             print ('renaming bison output files')
@@ -546,10 +549,13 @@ cdef class ParserEngine:
             print ('flex cmd:', ' '.join(flexCmd))
 
         # env.spawn(flexCmd)
-        proc = subprocess.Popen(' '.join(flexCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(' '.join(flexCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
         if proc.returncode:
             raise Exception(err)
+
+        if parser.verbose:
+            print(out)
 
         if os.path.isfile(buildDirectory + parser.flexCFile1):
             os.unlink(buildDirectory + parser.flexCFile1)
@@ -581,8 +587,8 @@ cdef class ParserEngine:
         from distutils.command.build import build
         import fnmatch
         from importlib import machinery
+        from sysconfig import get_paths
 
-        print("parser.bisonCFile1", parser.bisonCFile1)
 
         # windows wants to export some symbols
         # https://stackoverflow.com/questions/34689210/error-exporting-symbol-when-building-python-c-extension-in-windows
@@ -603,9 +609,15 @@ cdef class ParserEngine:
                 buildDirectory + parser.bisonCFile1,
                 buildDirectory + parser.flexCFile1
             ],
-            include_dirs=["C:\Program Files\Python36\include"],
-            library_dirs=["C:\Program Files\Python36\libs"],
-            libraries=['python36']
+            include_dirs=[
+                get_paths()['include'],
+                get_paths()['platinclude']
+            ],
+            library_dirs=[
+                get_paths()['stdlib'],
+                get_paths()['platstdlib']
+            ]
+            # libraries=['python{version[0]}{version[1]}'.format(version=sys.version_info)]
         )
 
         dist = Distribution(dict(
@@ -625,7 +637,6 @@ cdef class ParserEngine:
         cmd.run()
 
         so_dir = os.path.join(buildDirectory, self.distutils_dir_name('lib'))
-        print("so_dir", so_dir)
 
         filenames = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(so_dir) for f in fnmatch.filter(files, '*' + machinery.EXTENSION_SUFFIXES[0])]
 
@@ -634,11 +645,11 @@ cdef class ParserEngine:
         libFileName = filenames[0]
         self.libFilename_py = libFileName
 
+
+        print("libFilename_py", self.libFilename_py)
+
         tmp_dir = os.path.join(buildDirectory, self.distutils_dir_name('temp'))
         shutil.rmtree(tmp_dir)
-
-        print("RUNRUNRUN")
-
 
         ####################################
         ####################################
@@ -692,8 +703,6 @@ cdef class ParserEngine:
                     os.remove(f)
                 except:
                     print("Warning: failed to delete temporary file {}".format(f))
-
-        print("HITLIST", ", ".join(hitlist))
 
         if parser.verbose:
             print('deleting temporary bison output files:')

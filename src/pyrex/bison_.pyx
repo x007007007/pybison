@@ -193,10 +193,10 @@ cdef class ParserEngine:
         use glib instead (or create windows equivalents), in which case I'd
         greatly appreciate you sending me a patch.
         """
-        self.open_lib_ctype()
+        # self.open_lib_ctype()
 
-        print("THIS IS THE END")
-        exit(0)
+        # print("THIS IS THE END")
+        # exit(0)
 
         cdef char *libFilename
         cdef char *err
@@ -492,19 +492,19 @@ cdef class ParserEngine:
 
         # TODO: WTF is this?
         # create and set up a compiler object
-        if sys.platform == 'win32':
-            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
-            env.initialize()
-            env.set_include_dirs([distutils.sysconfig.get_python_inc(),
-                                  r'D:\Tools\VC14\include',
-                                  r'D:\Tools\VC14\sdk\include'])
-            env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
-            env.set_library_dirs([os.path.join(sys.prefix, 'libs'),
-                                  r'D:\Tools\VC14\lib\amd64',
-                                  r'D:\Tools\VC14\sdk\lib\x64',])
-        else:
-            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
-            env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+        # if sys.platform == 'win32':
+        #     env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+        #     env.initialize()
+        #     env.set_include_dirs([distutils.sysconfig.get_python_inc(),
+        #                           r'D:\Tools\VC14\include',
+        #                           r'D:\Tools\VC14\sdk\include'])
+        #     env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
+        #     env.set_library_dirs([os.path.join(sys.prefix, 'libs'),
+        #                           r'D:\Tools\VC14\lib\amd64',
+        #                           r'D:\Tools\VC14\sdk\lib\x64',])
+        # else:
+        #     env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+        #     env.set_include_dirs([distutils.sysconfig.get_python_inc()])
 
         # -----------------------------------------
         # Now run bison on the grammar file
@@ -521,7 +521,7 @@ cdef class ParserEngine:
             raise Exception(err)
 
         if parser.verbose:
-            print(out)
+            print("CMD Output:", out)
 
         if parser.verbose:
             print ('renaming bison output files')
@@ -555,7 +555,7 @@ cdef class ParserEngine:
             raise Exception(err)
 
         if parser.verbose:
-            print(out)
+            print("CMD Output:", out)
 
         if os.path.isfile(buildDirectory + parser.flexCFile1):
             os.unlink(buildDirectory + parser.flexCFile1)
@@ -592,16 +592,17 @@ cdef class ParserEngine:
 
         # windows wants to export some symbols
         # https://stackoverflow.com/questions/34689210/error-exporting-symbol-when-building-python-c-extension-in-windows
-        with open(buildDirectory + parser.bisonCFile1, "a") as bisonfile:
-            bisonfile.write(
-                """
-                // PyMODINIT_FUNC initlibfoo(void) // Python 2
-                PyMODINIT_FUNC PyInit_{symbol}(void) // Python 3
-                {{
-                    return 0;
-                }}
-                """.format(symbol=parser.bisonEngineLibName)
-            )
+        if sys.platform == 'win32':
+            with open(buildDirectory + parser.bisonCFile1, "a") as bisonfile:
+                bisonfile.write(
+                    """
+                    // PyMODINIT_FUNC initlibfoo(void) // Python 2
+                    PyMODINIT_FUNC PyInit_{symbol}(void) // Python 3
+                    {{
+                        return 0;
+                    }}
+                    """.format(symbol=parser.bisonEngineLibName)
+                )
 
         shared_lib = Extension(
             parser.bisonEngineLibName,
@@ -642,8 +643,8 @@ cdef class ParserEngine:
 
         if len(filenames) != 1:
             raise RuntimeError("No/multiple shared objects found for current platform.")
-        libFileName = filenames[0]
-        self.libFilename_py = libFileName
+
+        self.libFilename_py = filenames[0]
 
 
         print("libFilename_py", self.libFilename_py)
@@ -685,7 +686,7 @@ cdef class ParserEngine:
         # hitlist = objs[:]
         hitlist = []
 
-        if os.path.isfile(libFileName):
+        if os.path.isfile(self.libFilename_py):
             for name in ['bisonFile', 'bisonCFile', 'bisonHFile',
                          'bisonCFile1', 'bisonHFile1', 'flexFile',
                          'flexCFile', 'flexCFile1',

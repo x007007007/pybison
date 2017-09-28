@@ -63,11 +63,12 @@ cdef extern from "../c/bisondynlib.h":
     #int bisondynlib_build(char *libName, char *includedir)
 
 
-import sys, os, hashlib, re, imp, traceback
+import sys, os, hashlib, re, traceback
 import shutil
 import distutils.sysconfig
 import distutils.ccompiler
 import subprocess
+from importlib import machinery
 
 
 # os.unlink = lambda x: x # What for?
@@ -119,7 +120,7 @@ cdef class ParserEngine:
 
         self.libFilename_py = parser.buildDirectory \
                               + parser.bisonEngineLibName \
-                              + imp.get_suffixes()[0][0]
+                              + machinery.EXTENSION_SUFFIXES[0]
 
         self.parserHash = hashParserObject(self.parser)
 
@@ -170,13 +171,6 @@ cdef class ParserEngine:
             if verbose:
                 print ("Hashes match, no need to rebuild bison engine lib")
 
-    def open_lib_ctype(self):
-        import ctypes
-
-        handle = ctypes.pydll.LoadLibrary(self.libFilename_py)
-        hash = ctypes.c_wchar_p.in_dll(ctypes.pythonapi, "rules_hash")
-
-
     def openLib(self):
         """
         Loads the parser engine's dynamic library, and extracts the following
@@ -193,11 +187,6 @@ cdef class ParserEngine:
         use glib instead (or create windows equivalents), in which case I'd
         greatly appreciate you sending me a patch.
         """
-        # self.open_lib_ctype()
-
-        # print("THIS IS THE END")
-        # exit(0)
-
         cdef char *libFilename
         cdef char *err
         cdef void *handle
@@ -295,8 +284,10 @@ cdef class ParserEngine:
             'void *(*py_callback)(void *, char *, int, int, ...);',
             'void (*py_input)(void *, char *, int *, int);',
             'void *py_parser;',
+            '#ifdef _WIN32',
+                '__declspec(dllexport)',
+            '#endif',
             'char *rules_hash = "%s";' % self.parserHash,
-            # '__declspec(dllexport) char *rules_hash = "%s";' % self.parserHash,
             '#define YYERROR_VERBOSE 1',
             '',
             '}',
@@ -427,8 +418,10 @@ cdef class ParserEngine:
 
         # now generate C code
         epilogue = '\n'.join([
+            '#ifdef _WIN32',
+                '__declspec(dllexport)',
+            '#endif',
             'void do_parse(void *parser1,',
-            # '__declspec(dllexport) void do_parse(void *parser1,',
             '              void *(*cb)(void *, char *, int, int, ...),',
             '              void (*in)(void *, char*, int *, int),',
             '              int debug',
@@ -581,27 +574,49 @@ cdef class ParserEngine:
         ####################################
         ####################################
         ####################################
-        print("PKG")
 
         from distutils.core import Extension, Distribution
         from distutils.command.build import build
         import fnmatch
-        from importlib import machinery
         from sysconfig import get_paths
-
 
         # windows wants to export some symbols
         # https://stackoverflow.com/questions/34689210/error-exporting-symbol-when-building-python-c-extension-in-windows
         if sys.platform == 'win32':
+                    # """
+                    # PyObject* superfasttanh(PyObject *unused, PyObject* o) {{
+                    #     double x = PyFloat_AsDouble(o);
+                    #     return PyFloat_FromDouble(x);
+                    # }}
+                    #
+                    # static PyMethodDef superfastcode_methods[] = {{
+                    #     // The first property is the name exposed to python, the second is the C++ function name
+                    #     {{ "fast_tanh", (PyCFunction)superfasttanh, METH_O, 0 }},
+                    #
+                    #     // Terminate the array with an object containing nulls.
+                    #     {{ 0, 0, 0, 0 }}
+                    # }};
+                    #
+                    # static PyModuleDef superfastcode_module = {{
+                    #     PyModuleDef_HEAD_INIT,
+                    #     "{modulename}",                            // Module name
+                    #     "Provides some functions, but faster",  // Module description
+                    #     0,
+                    #     superfastcode_methods                   // Structure that defines the methods
+                    # }};
+                    # """
+
+
             with open(buildDirectory + parser.bisonCFile1, "a") as bisonfile:
                 bisonfile.write(
                     """
                     // PyMODINIT_FUNC initlibfoo(void) // Python 2
                     PyMODINIT_FUNC PyInit_{symbol}(void) // Python 3
                     {{
+                        //return PyModule_Create(&superfastcode_module);
                         return 0;
                     }}
-                    """.format(symbol=parser.bisonEngineLibName)
+                    """.format(symbol=parser.bisonEngineLibName, modulename=parser.bisonEngineLibName)
                 )
 
         shared_lib = Extension(
@@ -646,11 +661,8 @@ cdef class ParserEngine:
 
         self.libFilename_py = filenames[0]
 
-
-        print("libFilename_py", self.libFilename_py)
-
         tmp_dir = os.path.join(buildDirectory, self.distutils_dir_name('temp'))
-        shutil.rmtree(tmp_dir)
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
         ####################################
         ####################################
@@ -740,6 +752,7 @@ cdef class ParserEngine:
         except Exception as e:
             print(e)
             ret=None
+
         return ret
 
     def __del__(self):

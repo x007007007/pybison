@@ -15,6 +15,3 @@ PyObject *(*bisondynlib_lookup_parser(void *handle))(PyObject *, void *, void *,
 char *bisondynlib_lookup_hash(void *handle);
 
 PyObject *bisondynlib_run(void *handle, PyObject *parser, void *cb, void *in, int debug);
-/*
-int bisondynlib_build(char *libName, char *pyincdir);
-*/

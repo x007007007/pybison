@@ -156,7 +156,7 @@ class BisonParser(object):
 
         self.buildDirectory = 'pybison_' + type(self).__name__ + os.path.sep
         if self.debug:
-            shutil.rmtree(self.buildDirectory)
+            shutil.rmtree(self.buildDirectory, ignore_errors=True)
         makedirs(self.buildDirectory, exist_ok=True)
 
         # setup

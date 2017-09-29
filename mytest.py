@@ -1,7 +1,7 @@
 from bison import BisonParser
 
-class Parser(BisonParser):
 
+class Parser(BisonParser):
 
     def __init__(self, **kwargs):
         self.bisonEngineLibName = self.__class__.__name__ + '_engine'
@@ -28,7 +28,7 @@ class Parser(BisonParser):
 #include "Python.h"
 #define YYSTYPE void *
 #include "tokens.h"
-int yylineno = 0;
+//int yylineno = 0;
 int yywrap() { return(1); }
 extern void *py_parser;
 extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
@@ -43,8 +43,6 @@ extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
     """
         print(self.lexscript)
         super(Parser, self).__init__(**kwargs)
-
-
 
 
 class MyParser(Parser):
@@ -82,6 +80,5 @@ class MyParser(Parser):
         return values[1]
 
 
-
 p = MyParser(verbose=False, debugSymbols=True)
-p.run(file='foo', debug=0)
+# p.run(file='foo', debug=0)

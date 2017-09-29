@@ -63,10 +63,12 @@ cdef extern from "../c/bisondynlib.h":
     #int bisondynlib_build(char *libName, char *includedir)
 
 
-import sys, os, hashlib, re, imp, traceback
+import sys, os, hashlib, re, traceback
 import shutil
 import distutils.sysconfig
 import distutils.ccompiler
+import subprocess
+from importlib import machinery
 
 
 # os.unlink = lambda x: x # What for?
@@ -118,11 +120,20 @@ cdef class ParserEngine:
 
         self.libFilename_py = parser.buildDirectory \
                               + parser.bisonEngineLibName \
-                              + imp.get_suffixes()[0][0]
+                              + machinery.EXTENSION_SUFFIXES[0]
 
         self.parserHash = hashParserObject(self.parser)
 
         self.openCurrentLib()
+
+    @staticmethod
+    def distutils_dir_name(dname):
+        import sysconfig, sys
+        """Returns the name of a distutils build directory"""
+        f = "{dirname}.{platform}-{version[0]}.{version[1]}"
+        return f.format(dirname=dname,
+                        platform=sysconfig.get_platform(),
+                        version=sys.version_info)
 
     def reset(self):
         """
@@ -273,8 +284,10 @@ cdef class ParserEngine:
             'void *(*py_callback)(void *, char *, int, int, ...);',
             'void (*py_input)(void *, char *, int *, int);',
             'void *py_parser;',
+            '#ifdef _WIN32',
+                '__declspec(dllexport)',
+            '#endif',
             'char *rules_hash = "%s";' % self.parserHash,
-            # '__declspec(dllexport) char *rules_hash = "%s";' % self.parserHash,
             '#define YYERROR_VERBOSE 1',
             '',
             '}',
@@ -309,7 +322,8 @@ cdef class ParserEngine:
 
         write("\n\n%%\n\n")
 
-        write(parser.raw_c_rules)
+        if parser.raw_c_rules:
+            write(parser.raw_c_rules)
 
         # carve up docstrings
         rules = []
@@ -363,7 +377,7 @@ cdef class ParserEngine:
                     if 'error' in option:
                         action = action + "             yyerrok;\n"
                     action = action + '          $$ = (*py_callback)(\n            py_parser, "%s", %s, %%s' % \
-                             (rule[0], idx) # note we're deferring the substitution of 'nterms' (last arg)
+                                      (rule[0], idx) # note we're deferring the substitution of 'nterms' (last arg)
                     args = []
                     i = -1
 
@@ -404,8 +418,10 @@ cdef class ParserEngine:
 
         # now generate C code
         epilogue = '\n'.join([
+            '#ifdef _WIN32',
+                '__declspec(dllexport)',
+            '#endif',
             'void do_parse(void *parser1,',
-            # '__declspec(dllexport) void do_parse(void *parser1,',
             '              void *(*cb)(void *, char *, int, int, ...),',
             '              void (*in)(void *, char*, int *, int),',
             '              int debug',
@@ -419,7 +435,7 @@ cdef class ParserEngine:
             '}',
             '',
             'int yyerror(char *msg)',
-            '{', 
+            '{',
             '  PyObject *error = PyErr_Occurred();',
             '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
@@ -448,7 +464,7 @@ cdef class ParserEngine:
             '  Py_DECREF(res);',
             '  return 0;',
             '}',
-            ]) + '\n'
+        ]) + '\n'
         write(epilogue)
 
         # done with grammar file
@@ -469,19 +485,19 @@ cdef class ParserEngine:
 
         # TODO: WTF is this?
         # create and set up a compiler object
-        if sys.platform == 'win32':
-            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
-            env.initialize()
-            env.set_include_dirs([distutils.sysconfig.get_python_inc(),
-                                  r'D:\Tools\VC14\include',
-                                  r'D:\Tools\VC14\sdk\include'])
-            env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
-            env.set_library_dirs([os.path.join(sys.prefix, 'libs'),
-                                  r'D:\Tools\VC14\lib\amd64',
-                                  r'D:\Tools\VC14\sdk\lib\x64',])
-        else:
-            env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
-            env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+        # if sys.platform == 'win32':
+        #     env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+        #     env.initialize()
+        #     env.set_include_dirs([distutils.sysconfig.get_python_inc(),
+        #                           r'D:\Tools\VC14\include',
+        #                           r'D:\Tools\VC14\sdk\include'])
+        #     env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
+        #     env.set_library_dirs([os.path.join(sys.prefix, 'libs'),
+        #                           r'D:\Tools\VC14\lib\amd64',
+        #                           r'D:\Tools\VC14\sdk\lib\x64',])
+        # else:
+        #     env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
+        #     env.set_include_dirs([distutils.sysconfig.get_python_inc()])
 
         # -----------------------------------------
         # Now run bison on the grammar file
@@ -491,14 +507,21 @@ cdef class ParserEngine:
         if parser.verbose:
             print ('bison cmd:', ' '.join(bisonCmd))
 
-        env.spawn(bisonCmd)
+        # env.spawn(bisonCmd)
+        proc = subprocess.Popen(' '.join(bisonCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        if proc.returncode:
+            raise Exception(err)
+
+        if parser.verbose:
+            print("CMD Output:", out)
 
         if parser.verbose:
             print ('renaming bison output files')
             print ('%s => %s%s' % (parser.bisonCFile, buildDirectory,
-                                  parser.bisonCFile1))
+                                   parser.bisonCFile1))
             print ('%s => %s%s' % (parser.bisonHFile, buildDirectory,
-                                  parser.bisonHFile1))
+                                   parser.bisonHFile1))
 
         if os.path.isfile(buildDirectory + parser.bisonCFile1):
             os.unlink(buildDirectory + parser.bisonCFile1)
@@ -518,14 +541,21 @@ cdef class ParserEngine:
         if parser.verbose:
             print ('flex cmd:', ' '.join(flexCmd))
 
-        env.spawn(flexCmd)
+        # env.spawn(flexCmd)
+        proc = subprocess.Popen(' '.join(flexCmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        if proc.returncode:
+            raise Exception(err)
+
+        if parser.verbose:
+            print("CMD Output:", out)
 
         if os.path.isfile(buildDirectory + parser.flexCFile1):
             os.unlink(buildDirectory + parser.flexCFile1)
 
         if parser.verbose:
             print ('%s => %s%s' % (parser.flexCFile, buildDirectory,
-                                  parser.flexCFile1))
+                                   parser.flexCFile1))
 
         shutil.copy(parser.flexCFile, buildDirectory + parser.flexCFile1)
 
@@ -540,25 +570,124 @@ cdef class ParserEngine:
         #cc.compile(['bisondynlib-win32.c'],
         #           extra_preargs=['/DWIN32', '/G4', '/Gs', '/Oit', '/MT', '/nologo', '/W3', '/WX', '/Id:\python23\include'])
 
+        ####################################
+        ####################################
+        ####################################
+        ####################################
+
+        from distutils.core import Extension, Distribution
+        from distutils.command.build import build
+        import fnmatch
+        from sysconfig import get_paths
+
+        # windows wants to export some symbols
+        # https://stackoverflow.com/questions/34689210/error-exporting-symbol-when-building-python-c-extension-in-windows
+        if sys.platform == 'win32':
+                    # """
+                    # PyObject* superfasttanh(PyObject *unused, PyObject* o) {{
+                    #     double x = PyFloat_AsDouble(o);
+                    #     return PyFloat_FromDouble(x);
+                    # }}
+                    #
+                    # static PyMethodDef superfastcode_methods[] = {{
+                    #     // The first property is the name exposed to python, the second is the C++ function name
+                    #     {{ "fast_tanh", (PyCFunction)superfasttanh, METH_O, 0 }},
+                    #
+                    #     // Terminate the array with an object containing nulls.
+                    #     {{ 0, 0, 0, 0 }}
+                    # }};
+                    #
+                    # static PyModuleDef superfastcode_module = {{
+                    #     PyModuleDef_HEAD_INIT,
+                    #     "{modulename}",                            // Module name
+                    #     "Provides some functions, but faster",  // Module description
+                    #     0,
+                    #     superfastcode_methods                   // Structure that defines the methods
+                    # }};
+                    # """
+
+
+            with open(buildDirectory + parser.bisonCFile1, "a") as bisonfile:
+                bisonfile.write(
+                    """
+                    // PyMODINIT_FUNC initlibfoo(void) // Python 2
+                    PyMODINIT_FUNC PyInit_{symbol}(void) // Python 3
+                    {{
+                        //return PyModule_Create(&superfastcode_module);
+                        return 0;
+                    }}
+                    """.format(symbol=parser.bisonEngineLibName, modulename=parser.bisonEngineLibName)
+                )
+
+        shared_lib = Extension(
+            parser.bisonEngineLibName,
+            sources = [
+                buildDirectory + parser.bisonCFile1,
+                buildDirectory + parser.flexCFile1
+            ],
+            include_dirs=[
+                get_paths()['include'],
+                get_paths()['platinclude']
+            ],
+            library_dirs=[
+                get_paths()['stdlib'],
+                get_paths()['platstdlib']
+            ]
+            # libraries=['python{version[0]}{version[1]}'.format(version=sys.version_info)]
+        )
+
+        dist = Distribution(dict(
+            name = parser.bisonEngineLibName,
+            version = '1.0',
+            description = 'This is a wrapper package to build custom parser c library.',
+            ext_modules = [shared_lib],
+            # Add prefix for the build dir
+            options={
+                'build': {
+                    'build_base': buildDirectory
+                }
+            }
+        ))
+
+        cmd = build(dist)
+        cmd.run()
+
+        so_dir = os.path.join(buildDirectory, self.distutils_dir_name('lib'))
+
+        filenames = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(so_dir) for f in fnmatch.filter(files, '*' + machinery.EXTENSION_SUFFIXES[0])]
+
+        if len(filenames) != 1:
+            raise RuntimeError("No/multiple shared objects found for current platform.")
+
+        self.libFilename_py = filenames[0]
+
+        tmp_dir = os.path.join(buildDirectory, self.distutils_dir_name('temp'))
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+        ####################################
+        ####################################
+        ####################################
+        ####################################
+
         # link 'em into a shared lib
-        objs = env.compile([buildDirectory + parser.bisonCFile1,
-                            buildDirectory + parser.flexCFile1],
-                           extra_preargs=parser.cflags_pre,
-                           extra_postargs=parser.cflags_post,
-                           debug=parser.debugSymbols)
-        libFileName = buildDirectory + parser.bisonEngineLibName \
-                      + imp.get_suffixes()[0][0]
+        objs = []
+        # objs = env.compile([buildDirectory + parser.bisonCFile1,
+        #                     buildDirectory + parser.flexCFile1],
+        #                    extra_preargs=parser.cflags_pre,
+        #                    extra_postargs=parser.cflags_post,
+        #                    debug=parser.debugSymbols)
+        # libFileName = buildDirectory + parser.bisonEngineLibName + imp.get_suffixes()[0][0]
 
-        if os.path.isfile(libFileName+".bak"):
-            os.unlink(libFileName+".bak")
+        # if os.path.isfile(libFileName+".bak"):
+        #     os.unlink(libFileName+".bak")
 
-        if os.path.isfile(libFileName):
-            os.rename(libFileName, libFileName+".bak")
+        # if os.path.isfile(libFileName):
+        #     os.rename(libFileName, libFileName+".bak")
 
-        if parser.verbose:
-            print ('linking: %s => %s' % (', '.join(objs), libFileName))
+        # if parser.verbose:
+        #     print ('linking: %s => %s' % (', '.join(objs), libFileName))
 
-        env.link_shared_object(objs, libFileName)
+        # env.link_shared_object(objs, libFileName)
 
         #cdef char *incdir
         #incdir = PyString_AsString(get_python_inc())
@@ -566,10 +695,10 @@ cdef class ParserEngine:
 
         # --------------------------------------------
         # clean up, if we succeeded
-        hitlist = objs[:]
-        hitlist.append("tmp.output")
+        # hitlist = objs[:]
+        hitlist = []
 
-        if os.path.isfile(libFileName):
+        if os.path.isfile(self.libFilename_py):
             for name in ['bisonFile', 'bisonCFile', 'bisonHFile',
                          'bisonCFile1', 'bisonHFile1', 'flexFile',
                          'flexCFile', 'flexCFile1',
@@ -578,26 +707,24 @@ cdef class ParserEngine:
                     fname = buildDirectory + getattr(parser, name)
                 else:
                     fname = None
-                #print ("want to delete %s" % fname)
                 if fname and os.path.isfile(fname):
                     hitlist.append(fname)
 
         if not parser.keepfiles:
             for f in hitlist:
                 try:
-                    os.unlink(f)
+                    os.remove(f)
                 except:
-                    print ("Warning: failed to delete temporary file %s" % f)
+                    print("Warning: failed to delete temporary file {}".format(f))
 
         if parser.verbose:
-            print ('deleting temporary bison output files:')
+            print('deleting temporary bison output files:')
 
-        for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile]:
-            if parser.verbose:
-                print ('rm %s' % f)
-
+        for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile, "tmp.output"]:
             if os.path.isfile(f):
-                os.unlink(f)
+                if parser.verbose:
+                    print('rm {}'.format(f))
+                os.remove(f)
 
     def closeLib(self):
         """
@@ -625,6 +752,7 @@ cdef class ParserEngine:
         except Exception as e:
             print(e)
             ret=None
+
         return ret
 
     def __del__(self):

@@ -66,9 +66,7 @@ static PyObject *py_attr_close_name;
  * function. This callback function will return parser._handle's python object
  * or, on failure, NULL is returned.
  */
-PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
-                      ...)
-{
+PyObject* py_callback(PyObject *parser, char *target, int option, int nargs, ...) {
     va_list ap;
     int i;
 
@@ -146,8 +144,7 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
     return res;
 }
 
-void py_input(PyObject *parser, char *buf, int *result, int max_size)
-{
+void py_input(PyObject *parser, char *buf, int *result, int max_size) {
     PyObject *handle, *arglist, *res;
     char *bufstr;
 
@@ -246,29 +243,10 @@ finish_input:
             return;
         Py_DECREF(marker_handle);
         Py_DECREF(po_long1);
-        return;
-
-        // get the 'file' attribute from the parser
-        PyObject *file_handle = PyObject_GetAttr(parser, py_attr_file_name);
-        // check if BisonParser['file'] was set
-        if (unlikely(!file_handle)) return;
-        // get the handle for file.close operation
-        handle = PyObject_GetAttr(file_handle, py_attr_close_name);
-        // delete file attribute pointer
-        Py_DECREF(file_handle);
-        // check of BisonParser['file'] has handle 'close'
-        if (unlikely(!handle)) return;
-
-        // get argument to pass to 'close' operation
-        arglist = PyTuple_New(0);
-        if (unlikely(!arglist)) { Py_DECREF(handle); return; }
-        // actually execute BisonParser['file'].close(0)
-        res = PyObject_CallObject(handle, arglist);
 
         Py_XDECREF(res);
         Py_DECREF(handle);
         Py_DECREF(arglist);
-
         // TODO: something went wrong while closing the buffer.
         if (unlikely(!res)) return;
     }

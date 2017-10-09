@@ -22,6 +22,7 @@ from __future__ import print_function
 
 import shutil
 import sys
+import os
 import traceback
 
 from bison_ import ParserEngine
@@ -55,8 +56,16 @@ class BisonParser(object):
     # ---------------------------------------
     # override these if you need to
 
+    raw_c_rules = ''
+
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = ['bison', '-d', '--debug']
+    bisonCmd = []
+    if sys.platform == 'win32':
+        bisonCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_bison.exe')
+    else:
+        bisonCmd.append('bison')
+    bisonCmd.append('-d')
+    bisonCmd.append('--debug')
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -71,7 +80,13 @@ class BisonParser(object):
     bisonHFile1 = 'tokens.h'
 
     # command and options for running [f]lex, except for filename arg.
-    flexCmd = ['flex', ]
+    flexCmd = []
+    if sys.platform == 'win32':
+        flexCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_flex.exe')
+        flexCmd.append('-DYY_NO_UNISTD_H=false')
+    else:
+        flexCmd = ['flex']
+
     flexFile = 'tmp.l'
     flexCFile = 'lex.yy.c'
 
@@ -85,7 +100,7 @@ class BisonParser(object):
     cflags_post = ['-O3', '-g']
 
     # Directory used to store the generated / compiled files.
-    buildDirectory = './'
+    buildDirectory = ''
 
     # Add debugging symbols to the binary files.
     debugSymbols = 1
@@ -139,9 +154,9 @@ class BisonParser(object):
         """
         self.debug = kw.get('debug', 0)
 
-        self.buildDirectory = './pybison-' + type(self).__name__ + '/'
+        self.buildDirectory = 'pybison_' + type(self).__name__ + os.path.sep
         if self.debug:
-            shutil.rmtree(self.buildDirectory)
+            shutil.rmtree(self.buildDirectory, ignore_errors=True)
         makedirs(self.buildDirectory, exist_ok=True)
 
         # setup
@@ -173,7 +188,7 @@ class BisonParser(object):
 
         # if engine lib name not declared, invent ont
         if not self.bisonEngineLibName:
-            self.bisonEngineLibName = self.__class__.__module__ + '-parser'
+            self.bisonEngineLibName = self.__class__.__module__ + '_parser'
 
         # get an engine
         self.engine = ParserEngine(self)

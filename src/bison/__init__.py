@@ -178,6 +178,8 @@ class BisonParser(object):
         # get an engine
         self.engine = ParserEngine(self)
 
+        self.BisonSyntaxError = BisonSyntaxError
+
     def __getitem__(self, idx):
         return self.last[idx]
 
@@ -405,3 +407,6 @@ class BisonParser(object):
             reset_style(color_blue(").")), reset_style('')
         ])
         raise BisonSyntaxError(err_msg % args, list(args))
+
+    def setSyntaxErrorReporting(self,fn):
+        self.report_syntax_error = fn

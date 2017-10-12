@@ -657,7 +657,8 @@ cdef class ParserEngine:
         filenames = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(so_dir) for f in fnmatch.filter(files, '*' + machinery.EXTENSION_SUFFIXES[0])]
 
         if len(filenames) != 1:
-            raise RuntimeError("No/multiple shared objects found for current platform.")
+            raise RuntimeError("No/multiple shared objects found for current platform.\n"
+                               "Possible objects are {}".format(filenames))
 
         self.libFilename_py = filenames[0]
 

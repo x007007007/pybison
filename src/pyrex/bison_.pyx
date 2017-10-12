@@ -152,6 +152,14 @@ cdef class ParserEngine:
         if verbose:
             distutils.log.set_verbosity(1)
 
+        # search for a shared object
+        so_dir = os.path.join(parser.buildDirectory, self.distutils_dir_name('lib'))
+        filenames = self.possible_so(so_dir)
+
+        self.libFilename_py = ""
+        if len(filenames) == 1:
+            self.libFilename_py = filenames[0]
+
         if not os.path.isfile(self.libFilename_py):
             self.buildLib()
 
@@ -170,6 +178,15 @@ cdef class ParserEngine:
         else:
             if verbose:
                 print ("Hashes match, no need to rebuild bison engine lib")
+
+    def possible_so(self, so_dir):
+        import fnmatch
+        regex_str =  '*' + self.parser.bisonEngineLibName + machinery.EXTENSION_SUFFIXES[0]
+        return [
+            os.path.join(dirpath, f)
+            for dirpath, dirnames, files in os.walk(so_dir)
+            for f in fnmatch.filter(files, regex_str)
+        ]
 
     def openLib(self):
         """
@@ -577,7 +594,6 @@ cdef class ParserEngine:
 
         from distutils.core import Extension, Distribution
         from distutils.command.build import build
-        import fnmatch
         from sysconfig import get_paths
 
         # windows wants to export some symbols
@@ -605,7 +621,6 @@ cdef class ParserEngine:
                     #     superfastcode_methods                   // Structure that defines the methods
                     # }};
                     # """
-
 
             with open(buildDirectory + parser.bisonCFile1, "a") as bisonfile:
                 bisonfile.write(
@@ -653,9 +668,7 @@ cdef class ParserEngine:
         cmd.run()
 
         so_dir = os.path.join(buildDirectory, self.distutils_dir_name('lib'))
-
-        filenames = [os.path.join(dirpath, f) for dirpath, dirnames, files in os.walk(so_dir) for f in fnmatch.filter(files, '*' + machinery.EXTENSION_SUFFIXES[0])]
-
+        filenames = self.possible_so(so_dir)
         if len(filenames) != 1:
             raise RuntimeError("No/multiple shared objects found for current platform.\n"
                                "Possible objects are {}".format(filenames))

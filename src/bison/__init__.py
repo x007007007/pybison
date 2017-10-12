@@ -61,6 +61,7 @@ class BisonParser(object):
     # Command and options for running yacc/bison, except for filename arg
     bisonCmd = []
     if sys.platform == 'win32':
+        # TODO search the right path
         bisonCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_bison.exe')
     else:
         bisonCmd.append('bison')
@@ -82,6 +83,7 @@ class BisonParser(object):
     # command and options for running [f]lex, except for filename arg.
     flexCmd = []
     if sys.platform == 'win32':
+        # TODO search the right path
         flexCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_flex.exe')
         flexCmd.append('-DYY_NO_UNISTD_H=false')
     else:
@@ -188,7 +190,7 @@ class BisonParser(object):
 
         # if engine lib name not declared, invent ont
         if not self.bisonEngineLibName:
-            self.bisonEngineLibName = self.__class__.__module__ + '_parser'
+            self.bisonEngineLibName = self.__class__.__module__.split('.')[-1] + '_parser'
 
         # get an engine
         self.engine = ParserEngine(self)

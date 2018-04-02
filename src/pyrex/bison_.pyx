@@ -731,14 +731,14 @@ cdef class ParserEngine:
                 except:
                     print("Warning: failed to delete temporary file {}".format(f))
 
-        if parser.verbose:
-            print('deleting temporary bison output files:')
+            if parser.verbose:
+                print('deleting temporary bison output files:')
 
-        for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile, "tmp.output"]:
-            if os.path.isfile(f):
-                if parser.verbose:
-                    print('rm {}'.format(f))
-                os.remove(f)
+            for f in [parser.bisonCFile, parser.bisonHFile, parser.flexCFile, "tmp.output"]:
+                if os.path.isfile(f):
+                    if parser.verbose:
+                        print('rm {}'.format(f))
+                    os.remove(f)
 
     def closeLib(self):
         """

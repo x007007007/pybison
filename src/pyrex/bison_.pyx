@@ -416,7 +416,7 @@ cdef class ParserEngine:
                     action = action + ",\n            ".join(args) + "\n            );\n"
 
                     if 'error' in option:
-                        action = action + " PyObject_SetAttrString(py_parser, \"last_error\", Py_None);\n"
+                        action = action + " PyObject_SetAttrString(py_parser, \"lasterror\", Py_None);\n"
                         action = action + "             Py_INCREF(Py_None);\n"
                         action = action + "             yyclearin;\n"
 

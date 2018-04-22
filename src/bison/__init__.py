@@ -423,6 +423,7 @@ class BisonParser(object):
             color_white(make_bold("line %d, pos %d to line %d, pos %d")),
             reset_style(color_blue(").")), reset_style('')
         ])
+        self.lasterror = msg, yytext, first_line, first_col, last_line, last_col
         raise BisonSyntaxError(err_msg % args, list(args))
 
     def setSyntaxErrorReporting(self,fn):

@@ -28,7 +28,7 @@ class Parser(BisonParser):
 #include "Python.h"
 #define YYSTYPE void *
 #include "tokens.h"
-int yylineno = 0;
+//int yylineno = 0;
 int yywrap() { return(1); }
 extern void *py_parser;
 extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);

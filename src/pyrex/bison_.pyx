@@ -258,21 +258,24 @@ cdef class ParserEngine:
         f = open(buildDirectory + parser.bisonFile, "w")
         write = f.write
         #writelines = f.writelines
-
+        if sys.platform == 'win32':
+            export = '__declspec(dllexport) '
+        else:
+            export = ''
         # grammar file prologue
         write('\n'.join([
             '%code top {',
             '',
             '#include "Python.h"',
             'extern FILE *yyin;',
-            #'extern int yylineno;'
+            # '' if sys.platform == 'win32' else 'extern int yylineno;'
             'extern char *yytext;',
             '#define YYSTYPE void*',
             #'extern void *py_callback(void *, char *, int, void*, ...);',
             'void *(*py_callback)(void *, char *, int, int, ...);',
             'void (*py_input)(void *, char *, int *, int);',
             'void *py_parser;',
-            '__declspec(dllexport) char *rules_hash = "%s";' % self.parserHash,
+            export + 'char *rules_hash = "%s";' % self.parserHash,
             '#define YYERROR_VERBOSE 1',
             '',
             '}',
@@ -399,7 +402,7 @@ cdef class ParserEngine:
 
         # now generate C code
         epilogue = '\n'.join([
-            '__declspec(dllexport) void do_parse(void *parser1,',
+            export + 'void do_parse(void *parser1,',
             '              void *(*cb)(void *, char *, int, int, ...),',
             '              void (*in)(void *, char*, int *, int),',
             '              int debug',
@@ -475,7 +478,7 @@ cdef class ParserEngine:
         else:
             env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
             env.set_include_dirs([distutils.sysconfig.get_python_inc()])
-
+            env.define_macro('__declspec(x)')
 
         # -----------------------------------------
         # Now run bison on the grammar file

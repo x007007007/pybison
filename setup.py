@@ -18,9 +18,11 @@ if sys.platform == 'win32':
     extra_link_args = ['/debug','/Zi']
     bison2pyscript = 'utils/bison2py.py'
     bisondynlibModule = 'src/c/bisondynlib-win32.c'
+    extra_compile_args = ['/Od','/Zi','-D__builtin_expect(a,b)=(a)']
 elif sys.platform == 'linux':
     libs = ['dl']
     extra_link_args = []
+    extra_compile_args = []
     bison2pyscript = 'utils/bison2py'
     bisondynlibModule = 'src/c/bisondynlib-linux.c'
 else:
@@ -38,7 +40,7 @@ setup(
                     'src/pyrex/bison_.pyx',
                     'src/c/bison_callback.c',
                     bisondynlibModule],
-                    extra_compile_args=['/Od','/Zi','-D__builtin_expect(a,b)=(a)'],
+                    extra_compile_args=extra_compile_args,
                 libraries=libs,
                 extra_link_args=extra_link_args,
                 )

@@ -23,7 +23,7 @@ elif sys.platform == 'linux':
     libs = ['dl']
     extra_link_args = []
     extra_compile_args = []
-    bison2pyscript = 'utils/bison2py'
+    bison2pyscript = 'utils/bison2py.py'
     bisondynlibModule = 'src/c/bisondynlib-linux.c'
 else:
     print('Sorry, your platform is presently unsupported.')

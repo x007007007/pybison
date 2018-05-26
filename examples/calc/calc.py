@@ -36,7 +36,7 @@ class Parser(BisonParser):
     # ------------------------------------------------------------------
     def read(self, nbytes):
         try:
-            return input("> ") + "\n"
+            return input("> ").encode('ascii') + b"\n"
         except EOFError:
             return ''
 
@@ -112,7 +112,7 @@ class Parser(BisonParser):
     extern void (*py_input)(PyObject *parser, char *buf, int *result,
                             int max_size);
     #define returntoken(tok) \
-            yylval = PyString_FromString(strdup(yytext)); return (tok);
+            yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
     #define YY_INPUT(buf,result,max_size) { \
         (*py_input)(py_parser, buf, &result, max_size); \
     }

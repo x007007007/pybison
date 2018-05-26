@@ -261,7 +261,7 @@ cdef class ParserEngine:
         if sys.platform == 'win32':
             export = '__declspec(dllexport) '
         else:
-            export = ''
+            export = '__attribute__ ((dllexport)) '
         # grammar file prologue
         write('\n'.join([
             '%code top {',
@@ -657,7 +657,6 @@ def hashParserObject(parser):
     hasher.update(parser.lexscript.encode('utf-8'))
 
     # add the tokens
-
     # workaround pyrex weirdness
     tokens = list(parser.tokens)
     hasher.update(",".join(list(parser.tokens)).encode('utf-8'))

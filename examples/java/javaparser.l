@@ -10,7 +10,7 @@ Escchar      \\{D}({D}?{D})?
 Escunichar   \\u{H}{H}{H}{H}
 
 %{
-int yylineno = 0;
+//int yylineno = 0;
 #include <stdio.h>
 #include <string.h>
 #include "Python.h"
@@ -18,7 +18,7 @@ int yylineno = 0;
 #include "tokens.h"
 extern void *py_parser;
 extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
-#define returntoken(tok) /*printf("%d=%s\n", tok, yytext);*/ yylval = PyString_FromString(strdup(yytext)); return (tok);
+#define returntoken(tok) /*printf("%d=%s\n", tok, yytext);*/ yylval = PyUnicode_FromString(strdup(yytext)); return (tok);
 #define YY_INPUT(buf,result,max_size) { (*py_input)(py_parser, buf, &result, max_size); }
 
 #include "table.h"
@@ -101,7 +101,7 @@ extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
 ">>>="  { returntoken(SHR_ASSIGN_TOKEN); }
 
 [ \t\v\f]             {}
-[\n]		{yylineno++;}
+[\n]            {yylineno++;}
 
 .       { printf("unknown char %c ignored\n", yytext[0]); /* ignore bad chars */}
 
@@ -125,8 +125,8 @@ yywrap() { return(1); }
 
 
 /* input: Table of tokens
- * returns TokenCode of keyword if matched or 
- * ID_TOKEN if no match is found 
+ * returns TokenCode of keyword if matched or
+ * ID_TOKEN if no match is found
  */
 int Table_Lookup(struct KeywordToken Table[])
 {

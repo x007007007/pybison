@@ -105,7 +105,8 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     # -------------------------------------------------------------
     # process rules
     rulesRaw = re.sub('\\n([\t ]+)', ' ', rulesRaw) # join broken lines
-    rulesLines = list(filter('', list(map(str.strip, re.split(unquoted % ';', rulesRaw)))))
+    rulesLines = [x.strip() for x in  re.split(unquoted % ';', rulesRaw)
+                                  if x != '']
 
     rules = []
     for rule in rulesLines:
@@ -145,7 +146,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         '',
         'import sys',
         '',
-        'from bison import BisonParser, BisonNode, BisonError',
+        'from bison import BisonParser, BisonNode, BisonSyntaxError',
         '',
         'bisonFile = \'%s\'  # original bison file' % bisonfileName,
         'lexFile = \'%s\'    # original flex file' % lexfileName,
@@ -188,7 +189,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
 
         # now spit out class decs for every parse target
         for target, options in rules:
-            tmp = list(map(' '.join, options))
+            tmp = [' '.join(x) for x in options]
 
             # totally self-indulgent grammatical pedantry
             if target[0].lower() in ['a', 'e', 'i', 'o', 'u']:
@@ -257,7 +258,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     pyfile.write('    # ----------------------------------------------------------------\n')
     pyfile.write('    # lexer tokens - these must match those in your lex script (below)\n')
     pyfile.write('    # ----------------------------------------------------------------\n')
-    pyfile.write('    tokens = %s\n\n' % tmp)
+    pyfile.write('    tokens = %s\n\n' % tokens)
 
     # add the precedences
     pyfile.write('    # ------------------------------\n')
@@ -268,7 +269,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         #precline = ', '.join(prec[1])
         pyfile.write('        (\'%s\', %s,),\n' % (
                 prec[0][1:], # left/right/nonassoc, quote-wrapped, no '%s'
-                tmp,  # quote-wrapped targets
+                prec[1],  # quote-wrapped targets
                 )
             )
     pyfile.write('        )\n\n'),
@@ -296,7 +297,7 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
         ]))
 
     for target, options in rules:
-        tmp = list(map(' '.join, options))
+        tmp = [' '.join(x) for x in options]
 
         if generateClasses:
             nodeClassName = target + '_Node'
@@ -335,12 +336,12 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     # and now, create a main for testing which either reads stdin, or a filename arg
     pyfile.write('\n'.join([
         'def usage():',
-        '    print \'%s: PyBison parser derived from %s and %s\' % (sys.argv[0], bisonFile, lexFile)',
-        '    print \'Usage: %s [-k] [-v] [-d] [filename]\' % sys.argv[0]',
-        '    print \'  -k       Keep temporary files used in building parse engine lib\'',
-        '    print \'  -v       Enable verbose messages while parser is running\'',
-        '    print \'  -d       Enable garrulous debug messages from parser engine\'',
-        '    print \'  filename path of a file to parse, defaults to stdin\'',
+        '    print(\'%s: PyBison parser derived from %s and %s\' % (sys.argv[0], bisonFile, lexFile))',
+        '    print(\'Usage: %s [-k] [-v] [-d] [filename]\' % sys.argv[0])',
+        '    print(\'  -k       Keep temporary files used in building parse engine lib\')',
+        '    print(\'  -v       Enable verbose messages while parser is running\')',
+        '    print(\'  -d       Enable garrulous debug messages from parser engine\')',
+        '    print(\'  filename path of a file to parse, defaults to stdin\')',
         '',
         'def main(*args):',
         '    """',

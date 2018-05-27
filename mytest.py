@@ -13,16 +13,23 @@ class Parser(BisonParser):
         self.precedences = (
         )
 
-        self.start = "someTarget"
+        attribs = dir(self)
+        handlers = [getattr(self, x) for x in attribs
+                    if x.startswith('on_')]
+        start = [x.__name__.replace('on_', '')
+                 for x in handlers if getattr(x, '__start__', False)]
+        assert len(start) == 1, f'needs exactly one start node, found {len(start)}!'
+        self.start = start[0]
 
         lex_rules = '\n'.join(["{} {{ returntoken({}); }}"
                                .format(*x) if x[1][0] != '_' else
                                "{} {{ {} }}".format(x[0], x[1][1:])
                                for x in tokens])
 
-        self.tokens = list(set([x[1] for x in tokens if not x[1].startswith('_')]))
+        self.tokens = sorted(list(set([x[1] for x in tokens if not x[1].startswith('_')])))
         self.lexscript = r"""
 %{
+// Start node is: """ + self.start + r"""
 #include <stdio.h>
 #include <string.h>
 #include "Python.h"
@@ -41,11 +48,13 @@ extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
 
 %%
     """
-        print(self.lexscript)
+        #print(self.lexscript)
         super(Parser, self).__init__(**kwargs)
 
 
-
+def start(method):
+    method.__start__ = True
+    return method
 
 class MyParser(Parser):
     r"""
@@ -59,29 +68,32 @@ class MyParser(Parser):
         [ \t]                              = _
         .                                  = _
     """
-
+    @start
     def on_someTarget(self, target, option, names, values):
         """
         someTarget
         : paren_expr
         | someTarget WORD
+        | someTarget NUMBER
         | someTarget QUIT
         """
         print("on_someTarget: %s %s %s" % (option, names, repr(values)))
+        if option == 0:
+            return values[0]
         if option == 1:
             return values[1]
         elif option == 2:
-            print("quit!")
-            return 0
+            return (values[0], float(values[1]))
 
     def on_paren_expr(self, target, option, names, values):
         """
         paren_expr : LPAREN WORD RPAREN
         """
         print("PARENTHESISED", values)
-        return values[1]
+        return (values[1], )
 
 
 
 p = MyParser(verbose=False, debugSymbols=True)
-p.run(file='foo', debug=0)
+result = p.run(file='foo', debug=0)
+print(result)

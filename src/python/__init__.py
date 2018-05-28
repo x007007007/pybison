@@ -184,7 +184,7 @@ class BisonParser(object):
                 self.last = handler(target=targetname, option=option, names=names,
                                     values=values)
             except Exception as e:
-                print("returning exception", e, targetname, option, names, values)
+                #print("returning exception", e, targetname, option, names, values)
                 self.last = e
                 return e
 
@@ -352,5 +352,5 @@ class BisonParser(object):
     def report_syntax_error(self, msg, yytext, first_line, first_col,
             last_line, last_col):
         yytext = yytext.replace('\n', '\\n')
-        args = (first_line, first_col, last_line, last_col, msg, yytext)
+        args = (first_line+1, first_col, last_line+1, last_col, msg, yytext)
         raise BisonSyntaxError('%d.%d-%d.%d: "%s" near "%s".' % args, args)

@@ -416,7 +416,7 @@ cdef class ParserEngine:
             '}',
             '',
             'int yyerror(char *msg)',
-            '{ fprintf(stderr, "error!\\n");',
+            '{ // fprintf(stderr, "error!\\n");',
             '  PyObject *error = PyErr_Occurred();',
             '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',

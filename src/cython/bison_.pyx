@@ -179,13 +179,17 @@ cdef class ParserEngine:
         cdef void *handle
 
         # convert python filename string to c string
-        libFilename = PyBytes_AsString(self.libFilename_py.encode('ascii'))
-
+        filename_bytes = self.libFilename_py.encode('ascii')
+        # `filename_bytes` has to be its own variable
+        # or it gets gc'ed before libFilename is used
+        libFilename = PyBytes_AsString(filename_bytes)
         parser = self.parser
 
         if parser.verbose:
             print 'Opening library %s' % self.libFilename_py
         handle = bisondynlib_open(libFilename)
+        if handle == NULL:
+            raise Exception('library loading failed!')
         self.libHandle = handle
         err = bisondynlib_err()
         if err:
@@ -620,6 +624,7 @@ cdef class ParserEngine:
             ret = bisondynlib_run(handle, parser, cbvoid, invoid, debug)
         except Exception as e:
             print(e)
+            raise
 
     def __del__(self):
         """

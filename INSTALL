@@ -4,11 +4,14 @@ INSTALL file for PyBison
 
 You will need:
 
-  - Python 2.2 or later, with development headers and libraries
-  - GNU bison (or yacc) - www.gnu.org or gnuwin32.sf.net
-  - GNU flex (or lex) - ditto
-  - The Pyrex Python/C wrapper creation framework:
-      - http://www.cosc.canterbury.ac.nz/~greg/python/Pyrex/
+  - Python 3.6 or later, with development headers and libraries
+  - for linux:
+    - GNU bison (or yacc) - www.gnu.org or gnuwin32.sf.net
+    - GNU flex (or lex) - ditto
+  - for windows:
+    winflexbison: https://github.com/lexxmark/winflexbison/tree/master/bin/Release
+  - Cython Python/C wrapper creation framework:
+      - http://cython.org
   - A standard C compiler and linker
 
 2. Installing

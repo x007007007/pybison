@@ -49,7 +49,10 @@ class BisonParser(object):
     # override these if you need to
 
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = ['bison', '-d', '-v', '-t']
+    if sys.platform == 'win32':
+        bisonCmd = ['win_bison', '-d', '-v', '-t']
+    else:
+        bisonCmd = ['bison', '-d', '-v', '-t']
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -64,7 +67,11 @@ class BisonParser(object):
     bisonHFile1 = 'tokens.h'
 
     # command and options for running [f]lex, except for filename arg.
-    flexCmd = ['flex', ]
+    if sys.platform == 'win32':
+        flexCmd = ['win_flex', '--wincompat']
+    else:
+        flexCmd = ['flex']
+
     flexFile = 'tmp.l'
     flexCFile = 'lex.yy.c'
 
@@ -72,10 +79,10 @@ class BisonParser(object):
     flexCFile1 = 'tmp.lex.c'
 
     # CFLAGS added before all command line arguments.
-    cflags_pre = ['-fPIC']
+    cflags_pre = ['-fPIC'] if sys.platform == 'linux' else []
 
     # CFLAGS added after all command line arguments.
-    cflags_post = ['-O3', '-g']
+    cflags_post = ['-O3', '-g'] if sys.platform == 'linux' else []
 
     # Directory used to store the generated / compiled files.
     buildDirectory = './'

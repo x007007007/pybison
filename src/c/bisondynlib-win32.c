@@ -46,7 +46,6 @@ char * bisondynlib_lookup_hash(void *handle)
     // rules_hash is a pointer, GetProcAddress returns the pointer's address
     // so it needs to be dereferenced
     hash = *((char **)GetProcAddress((HINSTANCE)handle, "rules_hash"));
-    printf("bisondynlib_lookup_hash: hash=%s\n", hash);
     return hash;
 }
 

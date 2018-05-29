@@ -1,4 +1,7 @@
 from bison import BisonParser
+import time
+import os
+import json
 
 class Parser(BisonParser):
 
@@ -64,7 +67,6 @@ extern void (*py_input)(PyObject *parser, char *buf, int *result, int max_size);
 
 %%
     """
-        #print(self.lexscript)
         super(Parser, self).__init__(**kwargs)
 
 
@@ -73,55 +75,11 @@ def start(method):
     return method
 
 
-from decimal import Decimal
-class MyParser(Parser):
-    r"""
-        quit                               = QUIT
-        [a-zA-Z0-9]+                       = WORD
-        ([0-9]*\.?)([0-9]+)(e[-+]?[0-9]+)? = NUMBER
-        ([0-9]+)(\.?[0-9]*)(e[-+]?[0-9]+)? = NUMBER
-        \(                                 = LPAREN
-        \)                                 = RPAREN
-        [ \t]                              = _
-        .                                  = _
-    """
-    @start
-    def on_someTarget(self, target, option, names, values):
-        """
-        someTarget
-        : paren_expr
-        | someTarget WORD
-        | someTarget NUMBER
-        | someTarget quit
-        """
-        print("on_someTarget: %s %s %s" % (option, names, repr(values)))
-        if option == 0:
-            return values[0]
-        if option == 1:
-            return values[1]
-        elif option == 2:
-            return (values[0], float(values[1]))
-
-    def on_paren_expr(self, target, option, names, values):
-        """
-        paren_expr : LPAREN WORD RPAREN
-        """
-        return (values[1], )
-
-    def on_QUIT(self, target, option, names, values):
-        """
-        quit
-        : QUIT
-        """
-        import sys
-        print('exiting')
-        sys.exit(1)
-
-
 class JSONParser(Parser):
     r"""
         -?[0-9]+                            = INTEGER
         -?[0-9]+([.][0-9]+)?([eE]-?[0-9]+)? = FLOAT
+        false|true|null                     = BOOL
         \"([^\"]|\\[.])*\"                  = STRING
         \{                                  = O_START
         \}                                  = O_END
@@ -139,6 +97,7 @@ class JSONParser(Parser):
         : string
         | INTEGER
         | FLOAT
+        | BOOL
         | array
         | object
         """
@@ -146,6 +105,10 @@ class JSONParser(Parser):
             return int(values[0])
         if option == 2:
             return float(values[0])
+        if option == 3:
+            return {'false': False,
+                    'true': True,
+                    'null': None}[values[0]]
         return values[0]
 
     def on_string(self, target, option, names, values):
@@ -210,15 +173,14 @@ class JSONParser(Parser):
         values[2].insert(0, values[0])
         return values[2]
 
-import time
+
 start = time.time()
 j = JSONParser(verbose=False, debugSymbols=True)
 duration = time.time() - start
 print('instantiate parser', duration)
-j = MyParser(verbose=True, debugSymbols=True)
-file = 'foo'
 
-import json
+file = 'example.json'
+
 start = time.time()
 with open(file) as fh:
     result = json.load(fh)
@@ -230,5 +192,5 @@ start = time.time()
 result = j.run(file=file, debug=0)
 duration = time.time() - start
 print('me', duration)
-import os
-print(os.stat(file).st_size / 1024)
+print('result:', result)
+print('filesize: {} kB'.format(os.stat(file).st_size / 1024))

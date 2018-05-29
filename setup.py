@@ -4,10 +4,9 @@ Builds bison python module
 
 from __future__ import absolute_import
 from __future__ import print_function
-version = '0.1'
+version = '0.1.8'
 
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import setup, Extension
 from Cython.Distutils import build_ext
 
 import sys
@@ -30,24 +29,26 @@ else:
     sys.exit(1)
 
 setup(
-        name='bison',
-        version=version,
-        description='Python bindings for bison/flex parser engine',
-        author='David McNab <david@freenet.org.nz>',
-        url='http://www.freenet.org.nz/python/pybison',
-        ext_modules=[
-            Extension('bison_', [
-                    'src/pyrex/bison_.pyx',
-                    'src/c/bison_callback.c',
-                    bisondynlibModule],
-                    extra_compile_args=extra_compile_args,
-                libraries=libs,
-                extra_link_args=extra_link_args,
-                )
-            ],
-        packages=['bison'],
-        package_dir={'bison': 'src/python'},
-        #py_modules=['node', 'xmlifier', 'convert'],
-        cmdclass={'build_ext': build_ext},
-        scripts=[bison2pyscript],
+    name='pybison',
+    version=version,
+    description='Python bindings for bison/flex parser engine',
+    author='Christoph Sarnowski',
+    author_email='cs@chrisonpython.com',
+    url='https://github.com/csarn/pybison',
+    ext_modules=[
+        Extension('bison_', [
+            'src/cython/bison_.pyx',
+            'src/c/bison_callback.c',
+            bisondynlibModule
+        ],
+            extra_compile_args=extra_compile_args,
+            libraries=libs,
+            extra_link_args=extra_link_args,
         )
+    ],
+    include_package_data=True,
+    packages=['bison'],
+    package_dir={'bison': 'src/python'},
+    cmdclass={'build_ext': build_ext},
+    scripts=[bison2pyscript],
+)

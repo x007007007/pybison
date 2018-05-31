@@ -26,6 +26,10 @@
 
 #include "Python.h"
 
+#if PY_MAJOR_VERSION >= 3
+#define PY3
+#endif
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -49,11 +53,19 @@ static PyObject *py_attr_close_name;
 
 // Construct attribute names (only the first time)
 // TODO: where do we Py_DECREF(handle_name) ??
+#ifdef PY3
 #define INIT_ATTR(variable, name, failure) \
     if (unlikely(!variable)) { \
         variable = PyUnicode_FromString(name); \
         if (!variable) failure; \
     }
+#else
+#define INIT_ATTR(variable, name, failure) \
+    if (unlikely(!variable)) { \
+        variable = PyString_FromString(name); \
+        if (!variable) failure; \
+    }
+#endif
 
 #define debug_refcnt(variable, count) { \
         printf(#variable ": %d\n", Py_REFCNT(variable)); \
@@ -80,7 +92,11 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs,
 
     // Construct the names and values list from the variable argument list.
     for(i = 0; i < nargs; i++) {
+      #ifdef PY3
         PyObject *name = PyUnicode_FromString(va_arg(ap, char *));
+      #else
+        PyObject *name = PyString_FromString(va_arg(ap, char *));
+      #endif
         if(!name){
           Py_INCREF(Py_None);
           name = Py_None;
@@ -218,7 +234,11 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size)
 
 finish_input:
     // Copy the read python input string to the buffer
+    #ifdef PY3
     bufstr = PyBytes_AsString(res);
+    #else
+    bufstr = PyString_AsString(res);
+    #endif
     if(!bufstr){
       return;
     }

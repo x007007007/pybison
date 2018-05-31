@@ -1,13 +1,16 @@
 """
 Pyrex-generated portion of pybison
 """
+
 cdef extern from "Python.h":
-    #object PyString_FromStringAndSize(char *, int)
-#object PyString_FromString(char *)
-    object PyBytes_FromString(char *)
-#    char *PyString_AsString(object o)
-    char *PyBytes_AsString(object o)
-    object PyUnicode_FromString(char *)
+    IF PY3:
+        object PyBytes_FromString(char *)
+        object PyUnicode_FromString(char *)
+        char *PyBytes_AsString(object o)
+    ELSE:
+        object PyString_FromStringAndSize(char *, int)
+        object PyString_FromString(char *)
+        char *PyString_AsString(object o)
     object PyInt_FromLong(long ival)
     long PyInt_AsLong(object io)
 
@@ -22,6 +25,7 @@ cdef extern from "Python.h":
     object PyObject_Call(object callable_object, object args, object kw)
     object PyObject_CallObject(object callable_object, object args)
     int PyObject_SetAttrString(object o, char *attr_name, object v)
+
 
 # use libdl for now - easy and simple - maybe switch to
 # glib or libtool if a keen windows dev sends in a patch
@@ -69,7 +73,6 @@ import shutil
 import distutils.sysconfig
 import distutils.ccompiler
 
-os.unlink = lambda x: x
 reSpaces = re.compile("\\s+")
 
 #unquoted = r"""^|[^'"]%s[^'"]?"""
@@ -145,7 +148,11 @@ cdef class ParserEngine:
         self.openLib()
 
         # hash our parser spec, compare to hash val stored in lib
-        libHash = PyUnicode_FromString(self.libHash)
+        IF PY3:
+            libHash = PyUnicode_FromString(self.libHash)
+        ELSE:
+            libHash = PyString_FromString(self.libHash)
+
         if self.parserHash != libHash:
             if verbose:
                 print "Hash discrepancy, need to rebuild bison lib"
@@ -182,7 +189,10 @@ cdef class ParserEngine:
         filename_bytes = self.libFilename_py.encode('ascii')
         # `filename_bytes` has to be its own variable
         # or it gets gc'ed before libFilename is used
-        libFilename = PyBytes_AsString(filename_bytes)
+        IF PY3:
+            libFilename = PyBytes_AsString(filename_bytes)
+        ELSE:
+            libFilename = PyString_AsString(filename_bytes)
         parser = self.parser
 
         if parser.verbose:

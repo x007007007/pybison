@@ -79,10 +79,10 @@ class BisonParser(object):
     flexCFile1 = 'tmp.lex.c'
 
     # CFLAGS added before all command line arguments.
-    cflags_pre = ['-fPIC'] if sys.platform == 'linux' else []
+    cflags_pre = ['-fPIC'] if sys.platform.startswith('linux') else []
 
     # CFLAGS added after all command line arguments.
-    cflags_post = ['-O3', '-g'] if sys.platform == 'linux' else []
+    cflags_post = ['-O3', '-g'] if sys.platform.startswith('linux') else []
 
     # Directory used to store the generated / compiled files.
     buildDirectory = './'

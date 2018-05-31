@@ -1,3 +1,4 @@
+from __future__ import print_function
 from bison import BisonParser
 import time
 import os
@@ -21,7 +22,7 @@ class Parser(BisonParser):
                     if x.startswith('on_')]
         start = [x.__name__.replace('on_', '')
                  for x in handlers if getattr(x, '__start__', False)]
-        assert len(start) == 1, f'needs exactly one start node, found {len(start)}!'
+        assert len(start) == 1, 'needs exactly one start node, found {}!'.format(len(start))
         self.start = start[0]
         return_location = kwargs.pop('return_location', False)
         if return_location:
@@ -118,14 +119,6 @@ class JSONParser(Parser):
         """
         return values[0][1:-1]
 
-    def on_json(self, target, option, names, values):
-        """
-        json
-        : object
-        | value
-        """
-        return values[0]
-
     def on_object(self, target, option, names, values):
         """
         object
@@ -141,8 +134,8 @@ class JSONParser(Parser):
         | pair COMMA members
         """
         if option == 0:
-            return (values[0],)
-        return (values[0], *values[2])
+            return [values[0]]
+        return [values[0]]+ values[2]
 
     def on_pair(self, target, option, names, values):
         """
@@ -168,10 +161,8 @@ class JSONParser(Parser):
         | value COMMA elements
         """
         if option == 0:
-            return (values[0])
-        return (values[0], *values[2])
-        values[2].insert(0, values[0])
-        return values[2]
+            return [values[0]]
+        return [values[0]] + values[2]
 
 
 start = time.time()
@@ -183,14 +174,15 @@ file = 'example.json'
 
 start = time.time()
 with open(file) as fh:
-    result = json.load(fh)
+    result_json = json.load(fh)
 duration = time.time() - start
 print('json', duration)
 
 
 start = time.time()
-result = j.run(file=file, debug=0)
+result_bison = j.run(file=file, debug=0)
 duration = time.time() - start
 print('me', duration)
-print('result:', result)
+print('result equal to json:', result_json == result_bison)
+
 print('filesize: {} kB'.format(os.stat(file).st_size / 1024))

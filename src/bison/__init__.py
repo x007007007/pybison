@@ -166,7 +166,8 @@ class BisonParser(object):
         if nodeClass:
             self.defaultNodeClass = nodeClass
 
-        self.verbose = kw.get('verbose', 0)
+        self.verbose = kw.get('verbose', False)
+        self.debugSymbols = kw.get('debugSymbols', False)
 
         if 'keepfiles' in kw:
             self.keepfiles = kw['keepfiles']
@@ -228,9 +229,14 @@ class BisonParser(object):
         self.engine.reset()
 
     def parse_string(self, string):
+        """Supply file-like object containing the string."""
         file = IO(string.encode('utf-8'))
         return self.run(file=file)
 
+    def parse_file(self, filename):
+        """Better interface.
+        """
+        self.run(file=filename)
 
     def run(self, **kw):
         """

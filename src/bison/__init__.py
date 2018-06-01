@@ -29,6 +29,7 @@ except:
 
 from .bison_ import ParserEngine
 from .node import BisonNode
+from .convert import bisonToPython
 
 WIN_FLEX = join(dirname(__file__),
                 'winflexbison', 'win_flex.exe')

@@ -226,7 +226,6 @@ class Parser(BisonParser):
     # -----------------------------------------
     lexscript = r"""
     %{
-    int yylineno = 0;
     #include <stdio.h>
     #include <string.h>
     #include "Python.h"

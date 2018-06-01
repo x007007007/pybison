@@ -21,7 +21,7 @@ from __future__ import print_function
 import re
 import os
 
-from bison_ import unquoted
+from .bison_ import unquoted
 from six.moves import filter
 from six.moves import map
 
@@ -107,7 +107,6 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     rulesRaw = re.sub('\\n([\t ]+)', ' ', rulesRaw) # join broken lines
     rulesLines = [x.strip() for x in  re.split(unquoted % ';', rulesRaw)
                                   if x != '']
-
     rules = []
     for rule in rulesLines:
         #print '--'

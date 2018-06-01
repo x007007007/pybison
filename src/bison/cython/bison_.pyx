@@ -143,6 +143,9 @@ cdef class ParserEngine:
         parser = self.parser
         verbose = parser.verbose
 
+        if verbose:
+            distutils.log.set_verbosity(1)
+
         if not os.path.isfile(self.libFilename_py):
             self.buildLib()
 
@@ -478,7 +481,7 @@ cdef class ParserEngine:
         f = open(buildDirectory + parser.flexFile, 'w')
         f.write('\n'.join(tmp) + '\n')
         f.close()
-
+        
         # create and set up a compiler object
         if sys.platform == 'win32':
             env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
@@ -554,6 +557,7 @@ cdef class ParserEngine:
                            extra_preargs=parser.cflags_pre,
                            extra_postargs=parser.cflags_post,
                            debug=parser.debugSymbols)
+
         libFileName = buildDirectory + parser.bisonEngineLibName \
                       + imp.get_suffixes()[0][0]
 
@@ -565,6 +569,12 @@ cdef class ParserEngine:
 
         if parser.verbose:
             print 'linking: %s => %s' % (', '.join(objs), libFileName)
+
+        if sys.platform.startswith('darwin'):
+            # on OSX, ld throws undefined symbol for shared library references
+            # however, we would like to link against libpython dynamically, so that
+            # the built .so will not depend on which python interpreter it runs on 
+            env.linker_so += ['-undefined', 'dynamic_lookup']
 
         env.link_shared_object(objs, libFileName)
 

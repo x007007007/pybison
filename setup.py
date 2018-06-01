@@ -36,7 +36,15 @@ elif sys.platform.startswith('linux'):  # python2 reports "linux2"
     bison2pyscript = 'utils/bison2py.py'
     bisondynlibModule = 'src/bison/c/bisondynlib-linux.c'
 
-else:  # TODO: maybe support darwin?
+elif sys.platform.startswith('darwin'):
+    libs = ['dl']
+    extra_link_args = []
+    bison2pyscript = 'utils/bison2py'
+    bisondynlibModule = 'src/bison/c/bisondynlib-linux.c'
+    from distutils import sysconfig
+    vars = sysconfig.get_config_vars()
+    vars['LDSHARED'] = vars['LDSHARED'].replace('-bundle', '-dynamiclib')
+else:
     print('Sorry, your platform is presently unsupported.')
     sys.exit(1)
 

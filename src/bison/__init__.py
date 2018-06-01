@@ -19,9 +19,13 @@ for a commercial license.
 
 from __future__ import absolute_import
 from __future__ import print_function
-from os.path import abspath, dirname, join
+from os.path import dirname, join
 import sys
 import traceback
+try:
+    from io import BytesIO as IO
+except:
+    from cStringIO import StringIO as IO
 
 from .bison_ import ParserEngine
 from .node import BisonNode
@@ -31,6 +35,7 @@ WIN_FLEX = join(dirname(__file__),
 WIN_BISON = join(dirname(__file__),
                  'winflexbison', 'win_bison.exe')
 
+
 class BisonSyntaxError(Exception):
     def __init__(self, msg, args=[]):
         super(BisonSyntaxError, self).__init__(msg)
@@ -38,6 +43,7 @@ class BisonSyntaxError(Exception):
         if args:
             self.first_line, self.first_col, self.last_line, self.last_col, \
                     self.message, self.token_value = args
+
 
 class TimeoutError(Exception):
     pass
@@ -191,7 +197,7 @@ class BisonParser(object):
                 except:
                     hdlrline = handler.__init__.__code__.co_firstlineno
 
-                print('BisonParser._handle: call handler at line %s with: %s' \
+                print('BisonParser._handle: call handler at line %s with: %s'
                       % (hdlrline, str((targetname, option, names, values))))
             try:
                 self.last = handler(target=targetname, option=option, names=names,
@@ -201,7 +207,7 @@ class BisonParser(object):
                 self.last = e
                 return e
 
-            #if self.verbose:
+            # if self.verbose:
             #    print 'handler for %s returned %s' \
             #          % (targetname, repr(self.last))
         else:
@@ -220,6 +226,11 @@ class BisonParser(object):
 
     def reset(self):
         self.engine.reset()
+
+    def parse_string(self, string):
+        file = IO(string.encode('utf-8'))
+        return self.run(file=file)
+
 
     def run(self, **kw):
         """
@@ -241,6 +252,8 @@ class BisonParser(object):
                 fileobj = open(fileobj, 'rb')
             except:
                 raise Exception('Cannot open input file "%s"' % fileobj)
+        elif hasattr(fileobj, 'read') and hasattr(fileobj, 'closed'):  # allow BytesIO
+            pass
         else:
             filename = None
             fileobj = None
@@ -259,7 +272,7 @@ class BisonParser(object):
         if read:
             self.read = read
 
-        if self.verbose and self.file.closed:
+        if self.verbose and self.file and self.file.closed:
             print('Parser.run(): self.file', self.file, 'is closed')
 
         error_count = 0
@@ -338,7 +351,7 @@ class BisonParser(object):
 
         """
 
-        #if filename != None:
+        # if filename != None:
         #    msg = '%s:%d: "%s" near "%s"' \
         #            % ((filename,) + error)
 
@@ -346,14 +359,14 @@ class BisonParser(object):
         #        raise BisonSyntaxError(msg)
 
         #    print >>sys.stderr, msg
-        #elif hasattr(error, '__getitem__') and isinstance(error[0], int):
+        # elif hasattr(error, '__getitem__') and isinstance(error[0], int):
         #    msg = 'Line %d: "%s" near "%s"' % error
 
         #    if not self.interactive:
         #        raise BisonSyntaxError(msg)
 
         #    print >>sys.stderr, msg
-        #else:
+        # else:
         if not self.interactive:
             raise
 
@@ -363,7 +376,7 @@ class BisonParser(object):
         print('ERROR:', error)
 
     def report_syntax_error(self, msg, yytext, first_line, first_col,
-            last_line, last_col):
+                            last_line, last_col):
         yytext = yytext.replace('\n', '\\n')
         args = (first_line+1, first_col, last_line+1, last_col, msg, yytext)
         raise BisonSyntaxError('%d.%d-%d.%d: "%s" near "%s".' % args, args)

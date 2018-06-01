@@ -22,7 +22,7 @@ from __future__ import print_function
 import sys
 import traceback
 
-from bison_ import ParserEngine
+from .bison_ import ParserEngine
 from .node import BisonNode
 
 class BisonSyntaxError(Exception):

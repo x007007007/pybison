@@ -70,6 +70,7 @@ cdef extern from "../c/bisondynlib.h":
 import sys, os, re, imp, traceback
 from hashlib import md5
 import shutil
+import setuptools
 import distutils.sysconfig
 import distutils.ccompiler
 
@@ -482,16 +483,12 @@ cdef class ParserEngine:
         if sys.platform == 'win32':
             env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
             env.initialize()
-            env.set_include_dirs([distutils.sysconfig.get_python_inc(),
-                                  r'D:\Tools\VC14\include',
-                                  r'D:\Tools\VC14\sdk\include'])
-            env.set_libraries(['python{v.major}{v.minor}'.format(v=sys.version_info)])
-            env.set_library_dirs([os.path.join(sys.prefix, 'libs'),
-                                  r'D:\Tools\VC14\lib\amd64',
-                                  r'D:\Tools\VC14\sdk\lib\x64',])
+            env.add_library('python{v.major}{v.minor}'.format(v=sys.version_info))
+            env.add_include_dir(distutils.sysconfig.get_python_inc())
+            env.add_library_dir(os.path.join(sys.prefix, 'libs'))
         else:
             env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
-            env.set_include_dirs([distutils.sysconfig.get_python_inc()])
+            env.add_include_dir(distutils.sysconfig.get_python_inc())
             env.define_macro('__declspec(x)')
 
         # -----------------------------------------

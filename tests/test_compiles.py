@@ -168,6 +168,6 @@ class JSONParser(Parser):
 
 
 def test_parses_json():
-    j = JSONParser(verbose=False, debugSymbols=True)
+    j = JSONParser()
     result = j.parse_string(u'{"a": 1, "b": [true, null, 1.0, "äöü"]}')
     assert result == {'a': 1, 'b': [True, None, 1.0, u'äöü']}

@@ -22,7 +22,7 @@ package_data = []
 if sys.platform == 'win32':
     libs = []
     extra_link_args = ['/debug', '/Zi']
-    bison2pyscript = 'utils/bison2py.py'
+    bison2pyscript = 'utils/bison2py'
     bisondynlibModule = 'src/bison/c/bisondynlib-win32.c'
     extra_compile_args = ['/Od', '/Zi', '-D__builtin_expect(a,b)=(a)']
     for root, dirs, files in os.walk('src/bison/winflexbison'):
@@ -33,7 +33,7 @@ elif sys.platform.startswith('linux'):  # python2 reports "linux2"
     libs = ['dl']
     extra_link_args = []
     extra_compile_args = []
-    bison2pyscript = 'utils/bison2py.py'
+    bison2pyscript = 'utils/bison2py'
     bisondynlibModule = 'src/bison/c/bisondynlib-linux.c'
 
 elif sys.platform.startswith('darwin'):

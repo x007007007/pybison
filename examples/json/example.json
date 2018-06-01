@@ -63,7 +63,7 @@
       "servlet-name": "cofaxTools",
       "servlet-class": "org.cofax.cms.CofaxToolsServlet",
       "init-param": {
-        "templatePath": "toolstemplates/",
+        "templatePath": "toolstemplates",
         "log": 1,
         "logLocation": "/usr/local/tomcat/logs/CofaxTools.log",
         "logMaxSize": "",

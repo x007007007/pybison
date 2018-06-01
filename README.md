@@ -26,15 +26,25 @@ But PLY suffers some major limitations:
  * usage of 'named groups' regular expressions in the lexer creates
    a hard limit of 100 tokens - not enough to comfortably handle major
    languages
- 
+
  * pure-python implementation is a convenience, but incurs a cruel
    performance penalty
 
  * the parser engine is SLR, not full LALR(1)
 
-The other frameworks utilise a fiddly script syntax - 
-   
+The other frameworks utilise a fiddly script syntax -
+
 3) How do I use this?
 
 Refer to the INSTALL file for setting up.
 Refer to the examples and the doco for usage.
+
+
+4) Further Ideas
+- make parser reentrant
+- better support for debugging generated parsers
+- make generator
+- make tree matcher
+- make xpath-like search function?
+- convert parsimonious-parser to pybison
+- tutorial on putting generated parsers on pypi

@@ -66,6 +66,7 @@ setup(
     ],
     install_requires=[
         'six',
+        'setuptools',
     ],
     include_package_data=True,
     package_data={

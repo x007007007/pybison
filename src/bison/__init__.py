@@ -19,11 +19,17 @@ for a commercial license.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from os.path import abspath, dirname, join
 import sys
 import traceback
 
 from .bison_ import ParserEngine
 from .node import BisonNode
+
+WIN_FLEX = join(dirname(__file__),
+                'winflexbison', 'win_flex.exe')
+WIN_BISON = join(dirname(__file__),
+                 'winflexbison', 'win_bison.exe')
 
 class BisonSyntaxError(Exception):
     def __init__(self, msg, args=[]):
@@ -50,7 +56,7 @@ class BisonParser(object):
 
     # Command and options for running yacc/bison, except for filename arg
     if sys.platform == 'win32':
-        bisonCmd = ['win_bison', '-d', '-v', '-t']
+        bisonCmd = [WIN_BISON, '-d', '-v', '-t']
     else:
         bisonCmd = ['bison', '-d', '-v', '-t']
 
@@ -68,7 +74,7 @@ class BisonParser(object):
 
     # command and options for running [f]lex, except for filename arg.
     if sys.platform == 'win32':
-        flexCmd = ['win_flex', '--wincompat']
+        flexCmd = [WIN_FLEX, '--wincompat']
     else:
         flexCmd = ['flex']
 

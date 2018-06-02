@@ -166,7 +166,7 @@ class JSONParser(Parser):
 
 
 start = time.time()
-j = JSONParser(verbose=False, debugSymbols=True)
+j = JSONParser(verbose=False, debugSymbols=False)
 duration = time.time() - start
 print('instantiate parser', duration)
 
@@ -182,7 +182,7 @@ print('json', duration)
 start = time.time()
 result_bison = j.run(file=file, debug=0)
 duration = time.time() - start
-print('me', duration)
+print('bison-based JSONParser', duration)
 print('result equal to json:', result_json == result_bison)
 
 print('filesize: {} kB'.format(os.stat(file).st_size / 1024))

@@ -1,3 +1,4 @@
+# cython: linetrace=True
 """
 Pyrex-generated portion of pybison
 """
@@ -433,14 +434,14 @@ cdef class ParserEngine:
             '   yyparse();',
             '}',
             '',
-            'void yyerror(char *msg)',
+            'int yyerror(char *msg)',
             '{ // fprintf(stderr, "error!\\n");',
             '  PyObject *error = PyErr_Occurred();',
             '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
             '                                        "report_syntax_error");',
             '  if (!fn)',
-            '      return;',
+            '      return 0;',
             '',
             '  PyObject *args;',
             '  args = Py_BuildValue("(s,s,i,i,i,i)", msg, yytext,',
@@ -448,7 +449,7 @@ cdef class ParserEngine:
             '                       yylloc.last_line, yylloc.last_column);',
             '',
             '  if (!args)',
-            '      return;',
+            '      return 0;',
             #'',
             #'  fprintf(stderr, "%d.%d-%d.%d: error: \'%s\' before \'%s\'.",',
             #'          yylloc.first_line, yylloc.first_column,',
@@ -458,10 +459,10 @@ cdef class ParserEngine:
             '  Py_DECREF(args);',
             '',
             '  if (!res)',
-            '      return;',
+            '      return 0;',
             '',
             '  Py_DECREF(res);',
-            '  return;',
+            '  return 0;',
             '}',
             ]) + '\n'
         write(epilogue)

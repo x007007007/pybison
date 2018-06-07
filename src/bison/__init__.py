@@ -163,7 +163,7 @@ class BisonParser(object):
         else:
             self.file = sys.stdin
 
-        nodeClass = kw.get('defaultNodeClass', None)
+        nodeClass = kw.get('defaultNodeClass', BisonNode)
         if nodeClass:
             self.defaultNodeClass = nodeClass
 
@@ -238,8 +238,9 @@ class BisonParser(object):
     def parse_file(self, filename):
         """Better interface.
         """
-        self.run(file=filename)
+        return self.run(file=filename)
 
+    @profile
     def run(self, **kw):
         """
         Runs the parser, and returns the top-most parse target.

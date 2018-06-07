@@ -19,12 +19,17 @@ version = '0.1.8'
 
 package_data = []
 
+from Cython.Compiler.Options import get_directive_defaults
+
+get_directive_defaults()['linetrace'] = True
+get_directive_defaults()['binding'] = True
+
 if sys.platform == 'win32':
     libs = []
     extra_link_args = ['/debug', '/Zi']
     bison2pyscript = 'utils/bison2py'
     bisondynlibModule = 'src/bison/c/bisondynlib-win32.c'
-    extra_compile_args = ['/Od', '/Zi', '-D__builtin_expect(a,b)=(a)']
+    extra_compile_args = ['/Od', '/Zi', '-D__builtin_expect(a,b)=(a)', '/DCYTHON_TRACE=1']
     for root, dirs, files in os.walk('src/bison/winflexbison'):
         package_data.extend(join(root.replace('src/bison/', ''), f)
                             for f in files)
@@ -32,13 +37,14 @@ if sys.platform == 'win32':
 elif sys.platform.startswith('linux'):  # python2 reports "linux2"
     libs = ['dl']
     extra_link_args = []
-    extra_compile_args = []
+    extra_compile_args = ['-DCYTHON_TRACE=1']
     bison2pyscript = 'utils/bison2py'
     bisondynlibModule = 'src/bison/c/bisondynlib-linux.c'
 
 elif sys.platform.startswith('darwin'):
     libs = ['dl']
     extra_link_args = []
+    extra_compile_args = []
     bison2pyscript = 'utils/bison2py'
     bisondynlibModule = 'src/bison/c/bisondynlib-linux.c'
     from distutils import sysconfig

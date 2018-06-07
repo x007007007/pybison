@@ -58,7 +58,9 @@ PyObject * bisondynlib_run(void *handle, PyObject *parser, void *cb, void *in, i
     //printf("bisondynlib_run: calling parser\n");
 
     (*pparser)(parser, cb, in, debug);
-
+    if (PyErr_Occurred()){
+        return NULL;
+    }
     //printf("bisondynlib_run: back from parser\n");
     //return result;
     Py_INCREF(Py_None);

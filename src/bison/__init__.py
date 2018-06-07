@@ -168,6 +168,7 @@ class BisonParser(object):
             self.defaultNodeClass = nodeClass
 
         self.verbose = kw.get('verbose', False)
+        self.interactive = kw.get('interactive', False)
         self.debugSymbols = kw.get('debugSymbols', False)
 
         if 'keepfiles' in kw:

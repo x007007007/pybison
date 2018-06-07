@@ -433,14 +433,14 @@ cdef class ParserEngine:
             '   yyparse();',
             '}',
             '',
-            'int yyerror(char *msg)',
+            'void yyerror(char *msg)',
             '{ // fprintf(stderr, "error!\\n");',
             '  PyObject *error = PyErr_Occurred();',
             '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
             '                                        "report_syntax_error");',
             '  if (!fn)',
-            '      return 1;',
+            '      return;',
             '',
             '  PyObject *args;',
             '  args = Py_BuildValue("(s,s,i,i,i,i)", msg, yytext,',
@@ -448,7 +448,7 @@ cdef class ParserEngine:
             '                       yylloc.last_line, yylloc.last_column);',
             '',
             '  if (!args)',
-            '      return 1;',
+            '      return;',
             #'',
             #'  fprintf(stderr, "%d.%d-%d.%d: error: \'%s\' before \'%s\'.",',
             #'          yylloc.first_line, yylloc.first_column,',
@@ -458,10 +458,10 @@ cdef class ParserEngine:
             '  Py_DECREF(args);',
             '',
             '  if (!res)',
-            '      return 1;',
+            '      return;',
             '',
             '  Py_DECREF(res);',
-            '  return 0;',
+            '  return;',
             '}',
             ]) + '\n'
         write(epilogue)
@@ -481,7 +481,7 @@ cdef class ParserEngine:
         f = open(buildDirectory + parser.flexFile, 'w')
         f.write('\n'.join(tmp) + '\n')
         f.close()
-        
+
         # create and set up a compiler object
         if sys.platform == 'win32':
             env = distutils.ccompiler.new_compiler(verbose=parser.verbose)
@@ -573,7 +573,7 @@ cdef class ParserEngine:
         if sys.platform.startswith('darwin'):
             # on OSX, ld throws undefined symbol for shared library references
             # however, we would like to link against libpython dynamically, so that
-            # the built .so will not depend on which python interpreter it runs on 
+            # the built .so will not depend on which python interpreter it runs on
             env.linker_so += ['-undefined', 'dynamic_lookup']
 
         env.link_shared_object(objs, libFileName)
@@ -638,9 +638,8 @@ cdef class ParserEngine:
         cbvoid = <void *>py_callback
         invoid = <void *>py_input
         try:
-            ret = bisondynlib_run(handle, parser, cbvoid, invoid, debug)
+            bisondynlib_run(handle, parser, cbvoid, invoid, debug)
         except Exception as e:
-            print(e)
             raise
 
     def __del__(self):

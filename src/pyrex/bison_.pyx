@@ -544,11 +544,15 @@ cdef class ParserEngine:
             os.unlink(buildDirectory + parser.bisonCFile1)
 
         shutil.copy(parser.bisonCFile, buildDirectory + parser.bisonCFile1)
+        # delete 'local' file
+        os.remove(parser.bisonCFile)
 
         if os.path.isfile(buildDirectory + parser.bisonHFile1):
             os.unlink(buildDirectory + parser.bisonHFile1)
 
         shutil.copy(parser.bisonHFile, buildDirectory + parser.bisonHFile1)
+        # delete 'local' file
+        os.remove(parser.bisonHFile)
 
         # -----------------------------------------
         # Now run lex on the lex file
@@ -575,6 +579,8 @@ cdef class ParserEngine:
                                    parser.flexCFile1))
 
         shutil.copy(parser.flexCFile, buildDirectory + parser.flexCFile1)
+        # delete 'local' file
+        os.remove(parser.flexCFile)
 
         # -----------------------------------------
         # Now compile the files into a shared lib

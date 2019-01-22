@@ -21,7 +21,7 @@ from __future__ import print_function
 import re
 import os
 
-from bison_ import unquoted
+from .bison_ import unquoted
 from six.moves import filter
 from six.moves import map
 
@@ -335,12 +335,12 @@ def bisonToPython(bisonfileName, lexfileName, pyfileName, generateClasses=0):
     # and now, create a main for testing which either reads stdin, or a filename arg
     pyfile.write('\n'.join([
         'def usage():',
-        '    print (\'%s: PyBison parser derived from %s and %s\' % (sys.argv[0], bisonFile, lexFile))',
-        '    print (\'Usage: %s [-k] [-v] [-d] [filename]\' % sys.argv[0])',
-        '    print (\'  -k       Keep temporary files used in building parse engine lib\')',
-        '    print (\'  -v       Enable verbose messages while parser is running\')',
-        '    print (\'  -d       Enable garrulous debug messages from parser engine\')',
-        '    print (\'  filename path of a file to parse, defaults to stdin\')',
+        '    print(\'%s: PyBison parser derived from %s and %s\' % (sys.argv[0], bisonFile, lexFile))',
+        '    print(\'Usage: %s [-k] [-v] [-d] [filename]\' % sys.argv[0])',
+        '    print(\'  -k       Keep temporary files used in building parse engine lib\')',
+        '    print(\'  -v       Enable verbose messages while parser is running\')',
+        '    print(\'  -d       Enable garrulous debug messages from parser engine\')',
+        '    print(\'  filename path of a file to parse, defaults to stdin\')',
         '',
         'def main(*args):',
         '    """',

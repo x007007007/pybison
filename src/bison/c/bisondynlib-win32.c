@@ -40,11 +40,12 @@ char * bisondynlib_lookup_hash(void *handle) {
 }
 
 PyObject * bisondynlib_run(void *handle, PyObject *parser, void *cb, void *in, int debug) {
-    PyObject *(*pparser)(PyObject *, void *, void *, int);
+  PyObject *(*pparser)(PyObject *, void *, void *, int);
     pparser = bisondynlib_lookup_parser(handle);
     (*pparser)(parser, cb, in, debug);
-
-    //return result;
+    if (PyErr_Occurred()){
+        return NULL;
+    }
     Py_INCREF(Py_None);
     return Py_None;
 

@@ -6,25 +6,23 @@ python file from a yacc file and lex file
 Run it with 2 arguments - filename.y and filename.l
 Output is filename.py
 """
+from __future__ import absolute_import
+from __future__ import print_function
+import sys
 
-import sys, re
+from bison.convert import bisonToPython
 
-from bison import bisonToPython
-
-argv = sys.argv
-argc = len(argv)
-progname = argv[0]
-
-reSpaces = re.compile("\\s+")
 
 def usage(s=None):
     """
     Display usage info and exit
     """
-    if s:
-        print (progname + ': ' + s)
+    progname = sys.argv[0]
 
-    print ('\n'.join([
+    if s:
+        print(progname + ': ' + s)
+
+    print('\n'.join([
         'Usage: %s [-c] basefilename' % progname,
         '   or: %s [-c] grammarfile.y lexfile.l pyfile.py' % progname,
         '(generates a boilerplate python file from a grammar and lex file)',
@@ -39,11 +37,13 @@ def usage(s=None):
 
     sys.exit(1)
 
+
 def main():
     """
     Command-line interface for bison2py
     """
-    global argc, argv
+    argv = sys.argv
+    argc = len(argv)
 
     if '-c' in argv:
         generateClasses = 1
@@ -63,6 +63,7 @@ def main():
         usage("Bad argument count")
 
     bisonToPython(bisonfile, lexfile, pyfile, generateClasses)
+
 
 if __name__ == '__main__':
     main()

@@ -8,8 +8,6 @@ import sys
 
 import javaparser
 
-#src = "tst.java"
-
 argv = sys.argv
 argc = len(argv)
 
@@ -32,9 +30,7 @@ p = javaparser.Parser(verbose=verbose)
 print("delmebld.py: running parser on HelloWorldApp.java")
 res = p.run(file=src)
 print("back from engine, parse tree dump follows:")
-if 0:
-    print("------------------------------------------")
-    res.dump()
-    print("------------------------------------------")
-    print("end of parse tree dump")
-
+print("------------------------------------------")
+res.dump()
+print("------------------------------------------")
+print("end of parse tree dump")

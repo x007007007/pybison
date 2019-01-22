@@ -36,7 +36,7 @@ class Parser(BisonParser):
     # ------------------------------------------------------------------
     def read(self, nbytes):
         try:
-            return input("> ") + "\n"
+            return input("> ").encode("ascii") + b"\n"
         except EOFError:
             return ''
 
@@ -139,6 +139,7 @@ class Parser(BisonParser):
 
     yywrap() { return(1); }
     """
+
 
 if __name__ == '__main__':
     p = Parser()

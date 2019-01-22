@@ -3,14 +3,9 @@
 *.sw[a-z]
 *.pyc
 build/
-src/pyrex/bison_.c
-src/pyrex/bison_.h
-
-bison.egg-info
-src/bison_.cpython-35m-x86_64-linux-gnu.so
-examples/java/javaparser.py
 dist/
-*.so
+bison.egg-info
+
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
@@ -61,6 +56,7 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
 ### macOS template
 # General
 .DS_Store
@@ -88,6 +84,7 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
 ### Linux template
 *~
 
@@ -102,6 +99,7 @@ Temporary Items
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -202,3 +200,91 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+### C++ template
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+### C template
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+

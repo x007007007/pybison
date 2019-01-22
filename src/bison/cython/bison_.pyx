@@ -70,6 +70,7 @@ cdef extern from "../c/bisondynlib.h":
 import sys, os, hashlib, re, traceback
 import shutil
 import setuptools
+import distutils.log
 import distutils.sysconfig
 import distutils.ccompiler
 import subprocess
@@ -156,8 +157,7 @@ cdef class ParserEngine:
             distutils.log.set_verbosity(1)
 
         # search for a shared object
-        so_dir = os.path.join(parser.buildDirectory, self.distutils_dir_name('lib'))
-        filenames = self.possible_so(so_dir)
+        filenames = self.possible_so(parser.buildDirectory)
 
         self.libFilename_py = ""
         if len(filenames) == 1:
@@ -168,7 +168,7 @@ cdef class ParserEngine:
 
         self.openLib()
 
-        # hash our parser spec, compare to hash val stored in lib
+        # hash parser spec, compare to hash val stored in lib
         IF PY3:
             libHash = PyUnicode_FromString(self.libHash)
         ELSE:
@@ -236,7 +236,7 @@ cdef class ParserEngine:
 
         err = bisondynlib_err()
         if err:
-            printf('ParserEngine.openLib: error "{}"\n'.format(err))
+            print('ParserEngine.openLib: error "{}"\n'.format(err))
             return
 
         # extract symbols

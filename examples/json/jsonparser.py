@@ -165,24 +165,25 @@ class JSONParser(Parser):
         return [values[0]] + values[2]
 
 
-start = time.time()
-j = JSONParser(verbose=False, debugSymbols=False)
-duration = time.time() - start
-print('instantiate parser', duration)
+if __name__ == '__main__':
 
-file = 'example.json'
+    start = time.time()
+    j = JSONParser(verbose=False, debugSymbols=False)
+    duration = time.time() - start
+    print('instantiate parser', duration)
 
-start = time.time()
-with open(file) as fh:
-    result_json = json.load(fh)
-duration = time.time() - start
-print('json', duration)
+    file = 'example.json'
 
+    start = time.time()
+    with open(file) as fh:
+        result_json = json.load(fh)
+    duration = time.time() - start
+    print('json', duration)
 
-start = time.time()
-result_bison = j.run(file=file, debug=0)
-duration = time.time() - start
-print('bison-based JSONParser', duration)
-print('result equal to json:', result_json == result_bison)
+    start = time.time()
+    result_bison = j.run(file=file, debug=0)
+    duration = time.time() - start
+    print('bison-based JSONParser', duration)
+    print('result equal to json:', result_json == result_bison)
 
-print('filesize: {} kB'.format(os.stat(file).st_size / 1024))
+    print('filesize: {} kB'.format(os.stat(file).st_size / 1024))

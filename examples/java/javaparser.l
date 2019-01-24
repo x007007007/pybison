@@ -103,7 +103,7 @@ void commentold();
 ">>>="  { returntoken(SHR_ASSIGN_TOKEN); }
 
 [ \t\v\f]             {}
-[\n]		{yylineno++;}
+[\n]            {yylineno++;}
 
 .       { printf("unknown char %c ignored\n", yytext[0]); /* ignore bad chars */}
 
@@ -127,8 +127,8 @@ yywrap() { return(1); }
 
 
 /* input: Table of tokens
- * returns TokenCode of keyword if matched or 
- * ID_TOKEN if no match is found 
+ * returns TokenCode of keyword if matched or
+ * ID_TOKEN if no match is found
  */
 int Table_Lookup(struct KeywordToken Table[])
 {

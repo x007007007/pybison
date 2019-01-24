@@ -10,7 +10,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 
-from bison import bisonToPython
+from bison.convert import bisonToPython
 
 
 def usage(s=None):

@@ -21,15 +21,26 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import shutil
+from os.path import dirname, join
+
 import sys
 import os
 import traceback
+try:
+    from io import BytesIO as IO
+except:
+    from cStringIO import StringIO as IO
 
-from bison_ import ParserEngine
 from os import makedirs
 
+from .bison_ import ParserEngine
 from .node import BisonNode
 from .convert import bisonToPython
+
+WIN_FLEX = join(dirname(__file__),
+                'winflexbison', 'win_flex.exe')
+WIN_BISON = join(dirname(__file__),
+                 'winflexbison', 'win_bison.exe')
 
 
 class BisonSyntaxError(Exception):
@@ -61,12 +72,10 @@ class BisonParser(object):
     # Command and options for running yacc/bison, except for filename arg
     bisonCmd = []
     if sys.platform == 'win32':
-        # TODO search the right path
-        bisonCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_bison.exe')
+        bisonCmd = [WIN_BISON, '-d', '-v', '-t']
     else:
         bisonCmd.append('bison')
-    bisonCmd.append('-d')
-    bisonCmd.append('--debug')
+        bisonCmd = ['bison', '-d', '-v', '-t']
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -83,9 +92,8 @@ class BisonParser(object):
     # command and options for running [f]lex, except for filename arg.
     flexCmd = []
     if sys.platform == 'win32':
-        # TODO search the right path
-        flexCmd.append('C:\ProgramData\chocolatey\lib\winflexbison3\/tools\win_flex.exe')
-        flexCmd.append('-DYY_NO_UNISTD_H=false')
+        # flexCmd.append('-DYY_NO_UNISTD_H=false')
+        flexCmd = [WIN_FLEX, '--wincompat']
     else:
         flexCmd = ['flex']
 
@@ -96,10 +104,10 @@ class BisonParser(object):
     flexCFile1 = 'tmp.lex.c'
 
     # CFLAGS added before all command line arguments.
-    cflags_pre = ['-fPIC']
+    cflags_pre = ['-fPIC'] if sys.platform.startswith('linux') else []
 
     # CFLAGS added after all command line arguments.
-    cflags_post = ['-O3', '-g']
+    cflags_post = ['-O3', '-g'] if sys.platform.startswith('linux') else []
 
     # Directory used to store the generated / compiled files.
     buildDirectory = ''
@@ -177,13 +185,16 @@ class BisonParser(object):
         else:
             self.file = sys.stdin
 
-        nodeClass = kw.get('defaultNodeClass', None)
+        nodeClass = kw.get('defaultNodeClass', BisonNode)
         if nodeClass:
             self.defaultNodeClass = nodeClass
 
-        self.verbose = kw.get('verbose', 0)
+        self.verbose = kw.get('verbose', False)
         if self.verbose:
             self.bisonCmd.append('--verbose')
+
+        self.interactive = kw.get('interactive', False)
+        self.debugSymbols = kw.get('debugSymbols', False)
 
         if 'keepfiles' in kw:
             self.keepfiles = kw['keepfiles']
@@ -217,22 +228,22 @@ class BisonParser(object):
                 except:
                     hdlrline = handler.__init__.__code__.co_firstlineno
 
-                print('BisonParser._handle: call handler at line %s with: %s' \
-                      % (hdlrline, str((targetname, option, names, values))))
+                print("BisonParser._handle: call handler at line {} with: {}".format(
+                    hdlrline, str((targetname, option, names, values)))
+                )
             try:
                 self.last = handler(target=targetname, option=option, names=names,
                                     values=values)
             except Exception as e:
-                print("returning exception", e, targetname, option, names, values)
+                #print("returning exception", e, targetname, option, names, values)
                 self.last = e
                 return e
 
             # if self.verbose:
-            #    print ('handler for %s returned %s' \
-            #          % (targetname, repr(self.last)))
+            #    print("handler for {} returned {}".format(targetname, repr(self.last)))
         else:
             if self.verbose:
-                print('no handler for %s, using default' % targetname)
+                print("no handler for {}, using default".format(targetname))
 
             cls = self.default_node_class
             self.last = cls(target=targetname, option=option, names=names,
@@ -242,11 +253,20 @@ class BisonParser(object):
         return self.last
 
     def handle_timeout(self, signum, frame):
-        raise TimeoutError('Computation exceeded timeout limit.')
+        raise TimeoutError("Computation exceeded timeout limit.")
 
     def reset(self):
         self.marker = 0
         self.engine.reset()
+
+    def parse_string(self, string):
+        """Supply file-like object containing the string."""
+        file = IO(string.encode('utf-8'))
+        return self.run(file=file)
+
+    def parse_file(self, filename):
+        """Better interface."""
+        return self.run(file=filename)
 
     def run(self, **kw):
         """
@@ -270,13 +290,16 @@ class BisonParser(object):
                 i_opened_a_file = True
             except:
                 raise Exception('Cannot open input file "%s"' % fileobj)
+        elif hasattr(fileobj, 'read') and hasattr(fileobj, 'closed'):  # allow BytesIO
+            # TODO: Implement BytesIO
+            pass
         else:
             filename = None
             fileobj = None
 
         read = kw.get('read', self.read)
 
-        debug = kw.get('debug', 0)
+        debug = kw.get('debug', False)
 
         # back up existing attribs
         oldfile = self.file
@@ -288,8 +311,11 @@ class BisonParser(object):
         if read:
             self.read = read
 
+
         if self.verbose and self.marker:
             print('Parser.run(): self.marker (', self.marker, ') is set')
+        if self.verbose and self.file and self.file.closed:
+            print('Parser.run(): self.file', self.file, 'is closed')
 
         error_count = 0
         self.last = None
@@ -387,7 +413,7 @@ class BisonParser(object):
         #     if not self.interactive:
         #         raise BisonSyntaxError(msg)
 
-        #     print >>sys.stderr, msg
+        #    print >>sys.stderr, msg
         # else:
         if not self.interactive:
             raise
@@ -426,5 +452,5 @@ class BisonParser(object):
         self.lasterror = msg, yytext, first_line, first_col, last_line, last_col
         raise BisonSyntaxError(err_msg % args, list(args))
 
-    def setSyntaxErrorReporting(self,fn):
+    def setSyntaxErrorReporting(self, fn):
         self.report_syntax_error = fn

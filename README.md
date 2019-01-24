@@ -1,42 +1,7 @@
-# Fork of PyBison
-
-**(This is a fork of [eugenai/pybison](https://github.com/eugeneai/pybison)  and [smvv/pybison](https://github.com/smvv/pybison) for personal use.)**  
-I just added the one-line installation-script and colorfied the syntax-errors that are found by Bison.
-
-
-## One-Line Install
-
-### Global Python Installation (sudo needed)
-Needs sudo for the installation of the following dependencies:
-- **apt-get:** bison, flex
-    - `sudo apt install bison flex`
-- **pip3**: cython, six, pyrex, pybison itself
-    - `sudo -H pip3 install -U cython six`
-    - `pyrex`, `pybison` will be installed during the install script.
-
-Install with:
-```bash
-curl -s https://raw.githubusercontent.com/da-h/pybison/master/install_global.sh | bash
-```
-
-### Virtualenv Python Installation (no sudo needed)
-First, install the dependencies
-```bash
-sudo apt-get install bison flex
-```
-Now, install with:
-```bash
-curl -s https://raw.githubusercontent.com/da-h/pybison/master/install_venv.sh | bash
-```
-
-----------------------------------------------------------
-
-For further information, please read the following original **README**:  
-
-# Readme
-
+# PyBison
 Welcome to PyBison!  
 Bringing **GNU Bison/Flex**'s raw speed and power to Python  
+
 
 ## What is PyBison?
 PyBison is a framework which effectively 'wraps' **Bison** and **Flex into** a Python class structure.
@@ -44,7 +9,30 @@ PyBison is a framework which effectively 'wraps' **Bison** and **Flex into** a P
 You define a parser class, define tokens and precedences as attributes, and parse targets as methods with rules in the docstrings,
 then instantiate and run.
 
-Black Magick happens in the background, whereupon you get callbacks each time ```yyparse()``` resolves a parse target.
+Black Magick happens in the background, whereupon you get callbacks each time `yyparse()` resolves a parse target.
+
+
+
+## Install
+
+### Dependencies
+First, install the dependencies `bison` and `flex`.
+
+**Arch Linux**
+```bash
+sudo pacman -Suy bison flex
+```
+**Ubuntu**
+```bash
+sudo apt-get install bison flex
+```
+
+### Install
+
+Now, **install pybison** with:
+```bash
+pip install --user https://github.com/JGU-VC/pybison/archive/master.zip
+```
 
 
 ## There are already parsers for Python. Why re-invent the wheel?
@@ -56,18 +44,25 @@ IMO, the best one was **PLY** - a pure-python *lexx/yacc* implementation
 
 But PLY suffers some major limitations:
 
- * usage of 'named groups' regular expressions in the lexer creates
-   a hard limit of 100 tokens - not enough to comfortably handle major
-   languages
- 
- * pure-python implementation is a convenience, but incurs a cruel
-   performance penalty
+* usage of 'named groups' regular expressions in the lexer creates
+  a hard limit of 100 tokens - not enough to comfortably handle major
+  languages
+* pure-python implementation is a convenience, but incurs a cruel
+  performance penalty
+* the parser engine is SLR, not full LALR(1)
 
- * the parser engine is SLR, not full LALR(1)
+The other frameworks utilise a fiddly script syntax -
 
-The other frameworks utilise a fiddly script syntax - 
-   
 ## How do I use this?
+Refer to the [examples](examples) and the [docs](doc) for usage.
 
-Refer to the [INSTALL](INSTALL.md) file for setting up.  
-Refer to the [examples](examples) and the [docs](docs) for usage.
+
+## Collaborators
+- PyBison was designed and written by [David McNab <david@freenet.org.nz>](http://freenet.mcnabhosting.com/python/pybison/)
+- [smvv](https://github.com/smvv)
+- [habibutsu](https://github.com/habibutsu)
+- [thisiscam](https://github.com/thisiscam)
+- [eugeneai](https://github.com/eugenai)
+- [csarn](https://github.com/csarn)
+- [sbrodehl](https://github.com/sbrodehl)
+- [da-h](https://github.com/da)

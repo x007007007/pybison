@@ -4,7 +4,20 @@ language: python
 
 matrix:
   include:
-    - env: COMPILER=g++-5 TEST_FLAGS="-c gcc" LIBCXX=NO
+    - env: COMPILER=g++-5 LIBCXX=NO
+      python:
+        - "2.7"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-5
+            - g++-5
+            - bison
+            - flex
+
+    - env: COMPILER=g++-5 LIBCXX=NO
       python:
         - "3.6"
       addons:
@@ -16,6 +29,33 @@ matrix:
             - g++-5
             - bison
             - flex
+
+    - env: COMPILER=g++-8 LIBCXX=NO
+      python:
+        - "2.7"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-8
+            - g++-8
+            - bison
+            - flex
+
+    - env: COMPILER=g++-8 LIBCXX=NO
+      python:
+        - "3.6"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-8
+            - g++-8
+            - bison
+            - flex
+
 
 install:
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi

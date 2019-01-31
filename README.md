@@ -12,8 +12,17 @@ then instantiate and run.
 Black Magick happens in the background, whereupon you get callbacks each time `yyparse()` resolves a parse target.
 
 
-
 ## Install
+
+You will need:
+
+  - [Python](https://www.python.org/), with development headers and libraries
+  - [pip](https://pypi.org/project/pip/)
+  - [GNU bison](https://www.gnu.org/software/bison/)
+  - [flex](https://github.com/westes/flex)
+  - A standard C compiler and linker
+
+We assume that Python, pip and a C compiler is already installed.
 
 ### Dependencies
 First, install the dependencies `bison` and `flex`.
@@ -34,6 +43,13 @@ Now, **install pybison** with:
 pip install --user https://github.com/JGU-VC/pybison/archive/master.zip
 ```
 
+The following commands will verify if the installation succeeded:
+
+```bash
+which bison2py
+# /usr/bin/bison2py
+python -c "import bison"
+```
 
 ## There are already parsers for Python. Why re-invent the wheel?
 

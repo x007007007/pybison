@@ -1,0 +1,23 @@
+dist: trusty
+sudo: false
+language: python
+
+matrix:
+  include:
+    - env: COMPILER=g++-5 TEST_FLAGS="-c gcc" LIBCXX=NO
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.8
+            - g++-4.8
+            - bison
+            - flex
+
+install:
+  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
+  - ${CXX} --version
+
+script:
+    - python setup.py build

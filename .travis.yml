@@ -5,6 +5,8 @@ language: python
 matrix:
   include:
     - env: COMPILER=g++-5 TEST_FLAGS="-c gcc" LIBCXX=NO
+      python:
+        - "3.6"
       addons:
         apt:
           sources:
@@ -19,6 +21,7 @@ install:
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
   - ${CXX} --version
   - python --version
+  - pip install -r requirements.txt
 
 script:
     - python setup.py build

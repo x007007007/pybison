@@ -18,6 +18,7 @@ matrix:
 install:
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
   - ${CXX} --version
+  - python --version
 
 script:
     - python setup.py build

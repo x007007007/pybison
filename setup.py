@@ -33,6 +33,7 @@ class LazyCommandClass(dict):
 
         from Cython.Distutils import build_ext as cython_build_ext
         from Cython.Compiler.Options import get_directive_defaults
+        from Cython.Distutils.extension import Extension as CythonExtension
         get_directive_defaults()['linetrace'] = True
         get_directive_defaults()['binding'] = True
 
@@ -42,15 +43,11 @@ class LazyCommandClass(dict):
             extensions.
             """
             def build_extensions(self):
-                """
-                Lazily append numpy's include directory to Extension includes.
-                This is done here rather than at module scope because setup.py
-                may be run before numpy has been installed, in which case
-                importing numpy and calling `numpy.get_include()` will fail.
-                """
-                # numpy_incl = resource_filename('numpy', 'core/include')
-                # for ext in self.extensions:
-                #     ext.include_dirs.append(numpy_incl)
+                # create cython extension and replace
+                cext = CythonExtension(
+                        *self.distribution.ext_modules[0].args,
+                        **self.distribution.ext_modules[0].kwargs)
+                self.distribution.ext_modules[0] = cext
 
                 # This explicitly calls the superclass method rather than the
                 # usual super() invocation because distutils' build_class, of
@@ -61,9 +58,26 @@ class LazyCommandClass(dict):
 
 from setuptools import Extension
 
-version = '0.2'
+class LazyExtension(Extension):
+    """
+    Lazy command class that defers operations requiring Cython and numpy until
+    they've actually been downloaded and installed by setup_requires.
+    """
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        self.initialized = False
+        super().__init__(*args,**kwargs)
+        print("initializing")
 
-package_data = []
+
+version = '0.2.1'
+
+package_data = [
+    "src/bison/c/bison_callback.c",
+    "src/bison/c/bison_callback.h",
+    "src/bison/c/bisondynlib.h",
+]
 
 
 if sys.platform == 'win32':
@@ -96,6 +110,8 @@ else:
     print('Sorry, your platform is not supported.')
     sys.exit(1)
 
+package_data.append(bisondynlibModule)
+
 setup(
     name='bison',
     version=version,
@@ -103,7 +119,7 @@ setup(
     author='Visual Computing @ Johannes Gutenberg University <vc-infra@lists.uni-mainz.de>',
     url='https://github.com/JGU-VC/pybison',
     ext_modules=[
-        Extension(
+        LazyExtension(
             'bison.bison_',
             [
                 'src/bison/cython/bison_.pyx',
@@ -122,14 +138,13 @@ setup(
     cmdclass=LazyCommandClass(),
     scripts=[bison2pyscript],
     install_requires=[
-        "cython",
+        "Cython",
         "six",
         "setuptools"
     ],
     setup_requires=[
         'cython',
     ],
-    include_package_data=True,
     package_data={
         'bison': package_data,
     },

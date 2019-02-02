@@ -32,7 +32,7 @@ First, install the dependencies `bison` and `flex`.
 
 **Arch Linux**
 ```bash
-sudo pacman -Suy bison flex
+sudo pacman -S bison flex
 ```
 **Ubuntu**
 ```bash
@@ -43,14 +43,12 @@ sudo apt-get install bison flex
 
 Now, **install pybison** with:
 ```bash
-pip install --user https://github.com/JGU-VC/pybison/archive/master.zip
+pip install pybison
 ```
 
-The following commands will verify if the installation succeeded:
+The following command will verify if the installation succeeded:
 
 ```bash
-which bison2py
-# /usr/bin/bison2py
 python -c "import bison"
 ```
 

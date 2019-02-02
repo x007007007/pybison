@@ -71,7 +71,7 @@ class LazyExtension(Extension):
         print("initializing")
 
 
-version = '0.2.1'
+version = '0.2.3-2'
 
 package_data = [
     "src/bison/c/bison_callback.c",
@@ -113,11 +113,11 @@ else:
 package_data.append(bisondynlibModule)
 
 setup(
-    name='bison',
+    name='pybison',
     version=version,
     description='Python bindings for bison/flex parser engine',
-    author='Visual Computing @ Johannes Gutenberg University <vc-infra@lists.uni-mainz.de>',
-    url='https://github.com/JGU-VC/pybison',
+    author='Lukeparser Team',
+    url='https://github.com/lukeparser/pybison',
     ext_modules=[
         LazyExtension(
             'bison.bison_',
@@ -143,7 +143,7 @@ setup(
         "setuptools"
     ],
     setup_requires=[
-        'cython',
+        'Cython',
     ],
     package_data={
         'bison': package_data,

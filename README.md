@@ -1,6 +1,6 @@
 # PyBison
 ![python-3 badge](https://img.shields.io/badge/python-3-brightgreen.svg)
-[![Build Status](https://travis-ci.org/JGU-VC/pybison.svg?branch=master)](https://travis-ci.org/JGU-VC/pybison)
+[![Build Status](https://travis-ci.org/lukeparser/pybison.svg?branch=master)](https://travis-ci.org/lukeparser/pybison)
 
 Welcome to PyBison!  
 Bringing **GNU Bison/Flex**'s raw speed and power to Python  

@@ -10,6 +10,7 @@ from os.path import basename, join, splitext
 from glob import glob
 from setuptools import find_packages, setup
 
+
 # source: https://github.com/Blosc/bcolz/blob/master/setup.py#L34-L78
 class LazyCommandClass(dict):
     """
@@ -56,7 +57,9 @@ class LazyCommandClass(dict):
                 cython_build_ext.build_extensions(self)
         return build_ext
 
+
 from setuptools import Extension
+
 
 class LazyExtension(Extension):
     """

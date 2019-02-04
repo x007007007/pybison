@@ -61,7 +61,7 @@ class LazyCommandClass(dict):
 from setuptools import Extension
 
 
-class LazyExtension(Extension):
+class LazyExtension(Extension, object):
     """
     Lazy command class that defers operations requiring Cython and numpy until
     they've actually been downloaded and installed by setup_requires.

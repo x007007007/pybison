@@ -67,7 +67,7 @@ class LazyExtension(Extension):
         self.args = args
         self.kwargs = kwargs
         self.initialized = False
-        super().__init__(*args,**kwargs)
+        super(LazyExtension, self).__init__(*args, **kwargs)
         print("initializing")
 
 

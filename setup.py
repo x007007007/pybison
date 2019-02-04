@@ -74,7 +74,7 @@ class LazyExtension(Extension, object):
         print("initializing")
 
 
-version = '0.2.3-2'
+version = '0.2.3-3'
 
 package_data = [
     "src/bison/c/bison_callback.c",
@@ -160,6 +160,8 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',

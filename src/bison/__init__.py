@@ -280,6 +280,7 @@ class BisonParser(object):
         if self.verbose:
             print('Parser.run: calling engine')
 
+        filename = None
         # grab keywords
         i_opened_a_file = False
         fileobj = kw.get('file', self.file)

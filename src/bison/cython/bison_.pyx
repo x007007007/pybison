@@ -165,6 +165,12 @@ cdef class ParserEngine:
 
         if not os.path.isfile(self.libFilename_py):
             self.buildLib()
+            # search for a shared object
+            filenames = self.possible_so(parser.buildDirectory)
+
+            self.libFilename_py = ""
+            if len(filenames) == 1:
+                self.libFilename_py = filenames[0]
 
         self.openLib()
 

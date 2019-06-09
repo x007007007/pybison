@@ -75,6 +75,7 @@ import distutils.sysconfig
 import distutils.ccompiler
 import subprocess
 from importlib import machinery
+import textwrap
 
 reSpaces = re.compile("\\s+")
 
@@ -291,6 +292,7 @@ cdef class ParserEngine:
         gHandlers.sort(key=keyLines)
 
         # get start symbol, tokens, precedences, lex script
+        gDefines = parser.defines
         gStart = parser.start
         gTokens = parser.tokens
         gPrecedences = parser.precedences
@@ -355,6 +357,7 @@ cdef class ParserEngine:
         # write out tokens and start target dec
         write('%%token %s\n\n' % ' '.join(gTokens))
         write('%%start %s\n\n' % gStart)
+        write("\n".join(["%%define %s" % d for d in gDefines]))
 
         # write out precedences
         for p in gPrecedences:
@@ -464,6 +467,44 @@ cdef class ParserEngine:
             '   yyparse();',
             '}',
             '',
+        ])
+
+        if "api.pure full" in gDefines:
+            epilogue += '\n'.join([
+            'int yyerror(YYLTYPE *yylloc, char const *msg)',
+            '{',
+            '  PyObject *error = PyErr_Occurred();',
+            '  if(error) PyErr_Clear();',
+            '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
+            '                                        "report_syntax_error");',
+            '  if (!fn)',
+            '      return 1;',
+            '',
+            '  PyObject *args;',
+            '  args = Py_BuildValue("(s,s,i,i,i,i)", msg, yytext,',
+            '                       yylloc->first_line, yylloc->first_column,',
+            '                       yylloc->last_line, yylloc->last_column);',
+            '',
+            '  if (!args)',
+            '      return 1;',
+            #'',
+            #'  fprintf(stderr, "%d.%d-%d.%d: error: \'%s\' before \'%s\'.",',
+            #'          yylloc.first_line, yylloc.first_column,',
+            #'          yylloc.last_line, yylloc.last_column, msg, yytext);',
+            '',
+            '  PyObject *res = PyObject_CallObject(fn, args);',
+            '  Py_DECREF(args);',
+            '',
+            '  if (!res)',
+            '      return 1;',
+            '',
+            '  Py_DECREF(res);',
+            '  return 0;',
+            '}',
+            ]) + '\n'
+
+        else:
+            epilogue += '\n'.join([
             'int yyerror(char *msg)',
             '{',
             '  PyObject *error = PyErr_Occurred();',
@@ -494,7 +535,7 @@ cdef class ParserEngine:
             '  Py_DECREF(res);',
             '  return 0;',
             '}',
-        ]) + '\n'
+            ]) + '\n'
         write(epilogue)
 
         # done with grammar file
@@ -505,12 +546,8 @@ cdef class ParserEngine:
         if os.path.isfile(buildDirectory + parser.flexFile):
             os.unlink(buildDirectory + parser.flexFile)
 
-        lexLines = gLex.split("\n")
-        tmp = []
-        for line in lexLines:
-            tmp.append(line.strip())
         f = open(buildDirectory + parser.flexFile, 'w')
-        f.write('\n'.join(tmp) + '\n')
+        f.write(textwrap.dedent(gLex))
         f.close()
 
         # create and set up a compiler object

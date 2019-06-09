@@ -204,6 +204,8 @@ class BisonParser(object):
             self.bisonEngineLibName = self.__class__.__module__.split('.')[-1] + '_parser'
 
         # get an engine
+        if not hasattr(self,"defines"):
+            self.defines = []
         self.engine = ParserEngine(self)
 
         self.BisonSyntaxError = BisonSyntaxError

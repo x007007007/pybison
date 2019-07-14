@@ -204,9 +204,7 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size) {
     if (unlikely(!res)) {
         // Catch and reset KeyboardInterrupt exception
         PyObject *given = PyErr_Occurred();
-        if (given && PyErr_GivenExceptionMatches(given,
-                                                 PyExc_KeyboardInterrupt)) {
-
+        if (given && PyErr_GivenExceptionMatches(given, PyExc_KeyboardInterrupt)) {
             PyErr_Clear();
         }
 
@@ -265,10 +263,8 @@ finish_input:
         Py_DECREF(marker_handle);
         Py_DECREF(po_long1);
 
-        Py_XDECREF(res);
-        Py_DECREF(handle);
-        Py_DECREF(arglist);
         // TODO: something went wrong while closing the buffer.
         if (unlikely(!res)) return;
+        Py_XDECREF(res);
     }
 }

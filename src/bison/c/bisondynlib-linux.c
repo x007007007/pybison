@@ -58,8 +58,7 @@ PyObject *bisondynlib_run(void *handle, PyObject *parser, void *cb, void *in, in
     pparser = bisondynlib_lookup_parser(handle);
 
     if (!pparser) {
-        PyErr_SetString(PyExc_RuntimeError,
-                        "bisondynlib_lookup_parser() returned NULL");
+        PyErr_SetString(PyExc_RuntimeError, "bisondynlib_lookup_parser() returned NULL");
         return NULL;
     }
 
@@ -80,8 +79,7 @@ PyObject *bisondynlib_run(void *handle, PyObject *parser, void *cb, void *in, in
  * returning PyObject*
  */
 PyObject *(*bisondynlib_lookup_parser(void *handle))(PyObject *, void *, void *, int) {
-    PyObject *(*do_parse)(PyObject *, void *, void *, int) = dlsym(handle,
-            "do_parse");
+    PyObject *(*do_parse)(PyObject *, void *, void *, int) = dlsym(handle, "do_parse");
 
     dlerror();
 

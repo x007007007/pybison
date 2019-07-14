@@ -99,9 +99,11 @@ class BisonParser(object):
 
     flexFile = 'tmp.l'
     flexCFile = 'lex.yy.c'
+    flexHFile = 'lex.yy.h'
 
     # C output file from flex gets renamed to this.
     flexCFile1 = 'tmp.lex.c'
+    flexHFile1 = 'tmp.lex.h'
 
     # CFLAGS added before all command line arguments.
     cflags_pre = ['-fPIC'] if sys.platform.startswith('linux') else []
@@ -166,6 +168,7 @@ class BisonParser(object):
 
         self.buildDirectory = '/tmp/pybison/pybison_' + type(self).__name__ + os.path.sep
         if self.debug:
+            self.cflags_post = ['-O0', '-g'] if sys.platform.startswith('linux') else []
             shutil.rmtree(self.buildDirectory, ignore_errors=True)
         makedirs(self.buildDirectory, exist_ok=True)
 
@@ -204,8 +207,8 @@ class BisonParser(object):
             self.bisonEngineLibName = self.__class__.__module__.split('.')[-1] + '_parser'
 
         # get an engine
-        if not hasattr(self,"defines"):
-            self.defines = []
+        if not hasattr(self,"options"):
+            self.options = []
         self.engine = ParserEngine(self)
 
         self.BisonSyntaxError = BisonSyntaxError
@@ -234,10 +237,8 @@ class BisonParser(object):
                     hdlrline, str((targetname, option, names, values)))
                 )
             try:
-                self.last = handler(target=targetname, option=option, names=names,
-                                    values=values)
+                self.last = handler(target=targetname, option=option, names=names, values=values)
             except Exception as e:
-                #print("returning exception", e, targetname, option, names, values)
                 self.last = e
                 return e
 

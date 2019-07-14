@@ -257,7 +257,7 @@ cdef class ParserEngine:
         s += '          {\n'
         s += '            PyObject* obj = PyErr_Occurred();\n'
         s += '            if (obj) {\n'
-        s += '              //yyerror("exception raised");\n'
+        s += '              //yyerror(&yylloc, "exception raised");\n'
         s += '              YYERROR;\n'
         s += '            }\n'
         s += '          }\n'
@@ -292,7 +292,7 @@ cdef class ParserEngine:
         gHandlers.sort(key=keyLines)
 
         # get start symbol, tokens, precedences, lex script
-        gDefines = parser.defines
+        gOptions = parser.options
         gStart = parser.start
         gTokens = parser.tokens
         gPrecedences = parser.precedences
@@ -320,6 +320,8 @@ cdef class ParserEngine:
         write('\n'.join([
             '%code top {',
             '',
+            '#include "tokens.h"',
+            '#include "tmp.lex.h"',
             '#include "Python.h"',
             'extern FILE *yyin;',
             # '' if sys.platform == 'win32' else 'extern int yylineno;'
@@ -336,6 +338,7 @@ cdef class ParserEngine:
             '',
             '%code requires {',
             '',
+            'typedef void * yyscan_t;',
             '#define YYLTYPE YYLTYPE',
             'typedef struct YYLTYPE',
             '{',
@@ -357,7 +360,7 @@ cdef class ParserEngine:
         # write out tokens and start target dec
         write('%%token %s\n\n' % ' '.join(gTokens))
         write('%%start %s\n\n' % gStart)
-        write("\n".join(["%%define %s" % d for d in gDefines]))
+        write("\n".join(["%s" % d for d in gOptions]))
 
         # write out precedences
         for p in gPrecedences:
@@ -463,48 +466,73 @@ cdef class ParserEngine:
             '   py_callback = cb;',
             '   py_input = in;',
             '   py_parser = parser1;',
-            '   yydebug = debug;',
-            '   yyparse();',
-            '}',
+            '   yydebug = debug; // For Bison (still global, even in a reentrant parser)',
             '',
         ])
 
-        if "api.pure full" in gDefines:
+        if "%define api.pure full" in gOptions:
             epilogue += '\n'.join([
-            'int yyerror(YYLTYPE *yylloc, char const *msg)',
-            '{',
+                'yyscan_t scanner;',
+                'yylex_init(&scanner);',
+                
+                'if (debug) yyset_debug(1, scanner); // For Flex (no longer a global, but rather a member of yyguts_t)',
+                '',
+                '',
+                'int status;',
+                'yypstate *ps = yypstate_new ();',
+                'YYSTYPE pushed_value;',
+                'YYLTYPE yylloc;',
+                'do {',
+                '  int token = yylex(&pushed_value,&yylloc, scanner);',
+                '  status = yypush_parse (ps, token , &pushed_value, &yylloc, scanner);',
+                '} while (status == YYPUSH_MORE);',
+                'yypstate_delete(ps);',
+                'yylex_destroy(scanner);'
+                'return;',
+                # 'if (status == YYERROR)',
+                # 'yyerror();',
+            '}',
+            '',
+            '',
+            'void yyerror(YYLTYPE *locp, yyscan_t scanner, char const *msg) {',
+            '',
             '  PyObject *error = PyErr_Occurred();',
             '  if(error) PyErr_Clear();',
             '  PyObject *fn = PyObject_GetAttrString((PyObject *)py_parser,',
             '                                        "report_syntax_error");',
             '  if (!fn)',
-            '      return 1;',
+            '      return;',
             '',
             '  PyObject *args;',
-            '  args = Py_BuildValue("(s,s,i,i,i,i)", msg, yytext,',
-            '                       yylloc->first_line, yylloc->first_column,',
-            '                       yylloc->last_line, yylloc->last_column);',
+            '  args = Py_BuildValue("(s,s,i,i,i,i)", msg, yyget_text(scanner),',
+            '                       locp->first_line, locp->first_column,',
+            '                       locp->last_line, locp->last_column);',
             '',
             '  if (!args)',
-            '      return 1;',
-            #'',
-            #'  fprintf(stderr, "%d.%d-%d.%d: error: \'%s\' before \'%s\'.",',
-            #'          yylloc.first_line, yylloc.first_column,',
-            #'          yylloc.last_line, yylloc.last_column, msg, yytext);',
+            '      return;',
             '',
+            # '  fprintf(stderr, "%d.%d-%d.%d: error: \'%s\' before \'%s\'.",',
+            # '          locp->first_line, locp->first_column,',
+            # '          locp->last_line, locp->last_column, msg, yytext);',
+            # '',
             '  PyObject *res = PyObject_CallObject(fn, args);',
             '  Py_DECREF(args);',
+            #'  Py_DECREF(fn);',
             '',
             '  if (!res)',
-            '      return 1;',
+            '      return;',
             '',
-            '  Py_DECREF(res);',
-            '  return 0;',
+            '  Py_XDECREF(res);',
+            '  return;',
             '}',
             ]) + '\n'
 
         else:
             epilogue += '\n'.join([
+            '   yyparse();',
+            '}',
+            '',
+            '',
             'int yyerror(char *msg)',
             '{',
             '  PyObject *error = PyErr_Occurred();',
@@ -532,7 +560,7 @@ cdef class ParserEngine:
             '  if (!res)',
             '      return 1;',
             '',
-            '  Py_DECREF(res);',
+            '  Py_XDECREF(res);',
             '  return 0;',
             '}',
             ]) + '\n'
@@ -619,14 +647,22 @@ cdef class ParserEngine:
 
         if os.path.isfile(buildDirectory + parser.flexCFile1):
             os.unlink(buildDirectory + parser.flexCFile1)
-
         if parser.verbose:
-            print("{} => {}{}".format(parser.flexCFile, buildDirectory,
-                                       parser.flexCFile1))
-
+            print("{} => {}{}".format(parser.flexCFile, buildDirectory, parser.flexCFile1))
         shutil.copy(parser.flexCFile, buildDirectory + parser.flexCFile1)
         # delete 'local' file
         os.remove(parser.flexCFile)
+
+        if os.path.isfile(buildDirectory + parser.flexHFile1):
+            os.unlink(buildDirectory + parser.flexHFile1)
+        if parser.verbose:
+            print("{} => {}{}".format(parser.flexHFile, buildDirectory, parser.flexHFile1))
+        shutil.copy(parser.flexHFile, buildDirectory + parser.flexHFile1)
+        # delete 'local' file
+        # os.remove(parser.flexHFile)
+
+
+
 
         # -----------------------------------------
         # Now compile the files into a shared lib

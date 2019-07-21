@@ -325,7 +325,6 @@ cdef class ParserEngine:
             '#include "Python.h"',
             'extern FILE *yyin;',
             # '' if sys.platform == 'win32' else 'extern int yylineno;'
-            'extern char *yytext;',
             '#define YYSTYPE void*',
             #'extern void *py_callback(void *, char *, int, void*, ...);',
             'void *(*py_callback)(void *, char *, int, int, ...);',
@@ -415,6 +414,7 @@ cdef class ParserEngine:
                     action = '\n        {\n'
                     if 'error' in option:
                         action = action + "             yyerrok;\n"
+                        action = action + "             PyObject* lasterr = PyObject_GetAttrString((PyObject*)py_parser, \"lasterror\");;\n"
                     action = action + '          $$ = (*py_callback)(\n            py_parser, "%s", %s, %%s' % \
                                       (rule[0], idx) # note we're deferring the substitution of 'nterms' (last arg)
                     args = []
@@ -428,7 +428,10 @@ cdef class ParserEngine:
                                 i = i - 1
                                 break # hack for rules using '%prec'
                             o = option[i].replace('"', '\\"')
-                            args.append('"%s", $%d' % (o, i+1))
+                            if o == 'error':
+                                args.append('"%s", lasterr' % (o))
+                            else:
+                                args.append('"%s", $%d' % (o, i+1))
 
                     # now, we have the correct terms count
                     action = action % (i + 1)
@@ -439,6 +442,7 @@ cdef class ParserEngine:
 
                     if 'error' in option:
                         action = action + " PyObject_SetAttrString(py_parser, \"lasterror\", Py_None);\n"
+                        action = action + "             Py_DECREF(lasterr);\n"
                         action = action + "             Py_INCREF(Py_None);\n"
                         action = action + "             yyclearin;\n"
 
@@ -474,7 +478,7 @@ cdef class ParserEngine:
             epilogue += '\n'.join([
                 'yyscan_t scanner;',
                 'yylex_init(&scanner);',
-                
+
                 'if (debug) yyset_debug(1, scanner); // For Flex (no longer a global, but rather a member of yyguts_t)',
                 '',
                 '',
@@ -489,8 +493,6 @@ cdef class ParserEngine:
                 'yypstate_delete(ps);',
                 'yylex_destroy(scanner);'
                 'return;',
-                # 'if (status == YYERROR)',
-                # 'yyerror();',
             '}',
             '',
             '',
@@ -513,8 +515,8 @@ cdef class ParserEngine:
             '',
             # '  fprintf(stderr, "%d.%d-%d.%d: error: \'%s\' before \'%s\'.",',
             # '          locp->first_line, locp->first_column,',
-            # '          locp->last_line, locp->last_column, msg, yytext);',
-            # '',
+            # '          locp->last_line, locp->last_column, msg, yyget_text(scanner));',
+            '',
             '  PyObject *res = PyObject_CallObject(fn, args);',
             '  Py_DECREF(args);',
             #'  Py_DECREF(fn);',
@@ -532,6 +534,7 @@ cdef class ParserEngine:
             '   yyparse();',
             '}',
             '',
+            # 'extern char *yytext;',
             '',
             'int yyerror(char *msg)',
             '{',

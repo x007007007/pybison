@@ -74,7 +74,7 @@ class LazyExtension(Extension, object):
         print("initializing")
 
 
-version = '0.2.5'
+version = '0.2.6'
 
 package_data = [
     "src/bison/c/bison_callback.c",

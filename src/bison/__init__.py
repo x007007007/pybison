@@ -136,6 +136,9 @@ class BisonParser(object):
     # Enable this to keep all temporary engine build files.
     keepfiles = 1
 
+    # Enable this to handle all error exceptions by error-rules
+    handlesErrorRules = 0
+
     # Prefix of the shared object / dll file. Defaults to 'modulename-engine'.
     # If the module is executed directly, "__main__" will be used (since that
     # that is the "module name", in that case).
@@ -454,7 +457,10 @@ class BisonParser(object):
             reset_style(color_blue(").")), reset_style('')
         ])
         self.lasterror = msg, yytext, first_line, first_col, last_line, last_col
-        raise BisonSyntaxError(err_msg % args, list(args))
+        if self.handlesErrorRules:
+            return
+        else:
+            raise BisonSyntaxError(err_msg % args, list(args))
 
     def setSyntaxErrorReporting(self, fn):
         self.report_syntax_error = fn

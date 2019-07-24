@@ -486,6 +486,7 @@ cdef class ParserEngine:
                 'yypstate *ps = yypstate_new ();',
                 'YYSTYPE pushed_value;',
                 'YYLTYPE yylloc;',
+                'yylloc.first_line = yylloc.first_column = yylloc.last_line = yylloc.last_column = 1;',
                 'do {',
                 '  int token = yylex(&pushed_value,&yylloc, scanner);',
                 '  status = yypush_parse (ps, token , &pushed_value, &yylloc, scanner);',

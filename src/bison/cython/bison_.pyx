@@ -758,7 +758,6 @@ cdef class ParserEngine:
         try:
             ret = bisondynlib_run(handle, parser, cbvoid, invoid, debug)
         except Exception as e:
-            print(e)
             ret=None
 
         return ret

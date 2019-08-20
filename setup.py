@@ -26,7 +26,7 @@ def read(*parts):
 
 NAME = "pybison"
 DESCRIPTION='Python bindings for bison/flex parser engine',
-VERSION = '0.2.6-1'
+VERSION = '0.2.6-2'
 URL='https://github.com/lukeparser/pybison',
 AUTHOR = 'Lukeparser Team'
 LICENSE = 'GPLv2'
@@ -62,7 +62,7 @@ SETUP_REQUIRES = [
 PACKAGE_DATA = [
     "src/bison/c/bison_callback.c",
     "src/bison/c/bison_callback.h",
-    "src/bison/c/bisondynlib.h",
+    "src/bison/c/bisondynlib.h"
 ]
 SCRIPTS = ['utils/bison2py']
 
@@ -75,7 +75,6 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 # package_data depending on system
-
 if sys.platform == 'win32':
     libs = []
     extra_link_args = ['/debug', '/Zi']
@@ -123,8 +122,8 @@ define_macros = []
 try:
     from Cython.Distutils import build_ext
     from Cython.Distutils.extension import Extension
-    cmdclass={'build_ext' : build_ext},
-    extension_kwargs={'compile_time_env': {"PY3": sys.version_info.major >= 3}}
+    cmdclass={'build_ext' : build_ext}
+    extension_kwargs={'cython_compile_time_env': {"PY3": sys.version_info.major >= 3}}
 except ImportError:
     from distutils.extension import Extension
     print('Cython does not appear to be installed.  Attempting to use pre-made cpp file...')
@@ -140,7 +139,6 @@ ext_modules = [
         extra_compile_args=extra_compile_args,
         libraries=libs,
         extra_link_args=extra_link_args,
-        compiler_directives={'embedsignature': True},
         **extension_kwargs
     )
 ]

@@ -25,9 +25,9 @@ def read(*parts):
 ###################################################################
 
 NAME = "pybison"
-DESCRIPTION='Python bindings for bison/flex parser engine',
+DESCRIPTION='Python bindings for bison/flex parser engine'
 VERSION = '0.2.6-2'
-URL='https://github.com/lukeparser/pybison',
+URL='https://github.com/lukeparser/pybison'
 AUTHOR = 'Lukeparser Team'
 LICENSE = 'GPLv2'
 PACKAGES = find_packages(where="src")

@@ -43,6 +43,13 @@ WIN_BISON = join(dirname(__file__),
                  'winflexbison', 'win_bison.exe')
 
 
+__version__ = '0.2.6-2'
+__uri__ = 'https://github.com/lukeparser/pybison'
+__author__ = 'David McNab'
+__maintainer__ = 'Lukeparser Team'
+__license__ = 'GPLv2'
+
+
 class BisonSyntaxError(Exception):
     def __init__(self, msg, args=[]):
         super(BisonSyntaxError, self).__init__(msg)

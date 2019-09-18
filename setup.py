@@ -9,11 +9,6 @@ from os.path import join
 from setuptools import find_packages, setup
 from glob import glob
 
-# put the right setup.py into the sdist directory
-if os.path.isfile("setup.py"):
-    os.remove("setup.py")
-os.symlink("setup-full.py", "setup.py")
-
 
 ###################################################################
 #                             META DATA                           #
@@ -32,6 +27,7 @@ CLASSIFIERS = [
     'Operating System :: Unix',
     'Operating System :: POSIX',
     'Operating System :: Microsoft :: Windows',
+    'Operating System :: MacOS :: MacOS X',
     'Programming Language :: Python',
     'Programming Language :: Python :: 2',
     'Programming Language :: Python :: 2.7',

@@ -43,7 +43,7 @@ WIN_BISON = join(dirname(__file__),
                  'winflexbison', 'win_bison.exe')
 
 
-__version__ = '0.2.6-2'
+__version__ = '0.2.6-3'
 __uri__ = 'https://github.com/lukeparser/pybison'
 __author__ = 'David McNab'
 __maintainer__ = 'Lukeparser Team'

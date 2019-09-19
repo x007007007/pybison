@@ -17,30 +17,6 @@ Black Magick happens in the background, whereupon you get callbacks each time `y
 
 ## Install
 
-You will need:
-
-  - [Python](https://www.python.org/), with development headers and libraries
-  - [pip](https://pypi.org/project/pip/)
-  - [GNU bison](https://www.gnu.org/software/bison/)
-  - [flex](https://github.com/westes/flex)
-  - A standard C compiler and linker
-
-We assume that Python, pip and a C compiler is already installed.
-
-### Dependencies
-First, install the dependencies `bison` and `flex`.
-
-**Arch Linux**
-```bash
-sudo pacman -S bison flex
-```
-**Ubuntu**
-```bash
-sudo apt-get install bison flex
-```
-
-### Install
-
 Now, **install pybison** with:
 ```bash
 pip install pybison
@@ -72,6 +48,28 @@ The other frameworks utilise a fiddly script syntax -
 
 ## How do I use this?
 Refer to the [examples](examples) and the [docs](doc) for usage.
+
+## Development
+You will need:
+  - [Python](https://www.python.org/), with development headers and libraries
+  - [pip](https://pypi.org/project/pip/)
+  - [GNU bison](https://www.gnu.org/software/bison/)
+  - [flex](https://github.com/westes/flex)
+  - A standard C compiler and linker
+
+We assume that Python, pip and a C compiler is already installed.
+
+### Dependencies
+First, install the dependencies `bison` and `flex`.
+
+**Arch Linux**
+```bash
+sudo pacman -S bison flex
+```
+**Ubuntu**
+```bash
+sudo apt-get install bison flex
+```
 
 
 ## Collaborators

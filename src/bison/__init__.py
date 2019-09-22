@@ -43,7 +43,7 @@ WIN_BISON = join(dirname(__file__),
                  'winflexbison', 'win_bison.exe')
 
 
-__version__ = '0.2.6-3'
+__version__ = '0.2.7-1'
 __uri__ = 'https://github.com/lukeparser/pybison'
 __author__ = 'David McNab'
 __maintainer__ = 'Lukeparser Team'
@@ -157,7 +157,7 @@ class BisonParser(object):
 
     error_threshold = 10
 
-    def __init__(self, **kw):
+    def __init__(self, buildDirectory=None, **kw):
         """
         Abstract representation of parser
 
@@ -176,7 +176,11 @@ class BisonParser(object):
         """
         self.debug = kw.get('debug', 0)
 
-        self.buildDirectory = '/tmp/pybison/pybison_' + type(self).__name__ + os.path.sep
+        if buildDirectory is not None:
+            self.buildDirectory = buildDirectory
+        else:
+            self.buildDirectory = '/tmp/pybison/pybison_' + type(self).__name__ + os.path.sep
+
         if self.debug:
             self.cflags_post = ['-O0', '-g'] if sys.platform.startswith('linux') else []
             shutil.rmtree(self.buildDirectory, ignore_errors=True)
@@ -186,6 +190,8 @@ class BisonParser(object):
         read = kw.get('read', None)
         if read:
             self.read = read
+
+        self._buildOnlyCFiles = kw.get('_buildOnlyCFiles', False)
 
         fileobj = kw.get('file', None)
         if fileobj:

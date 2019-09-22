@@ -28,6 +28,7 @@ matrix:
         - openssl aes-256-cbc -K $encrypted_721b3232adb3_key -iv $encrypted_721b3232adb3_iv -in secret-files.tar.enc -out secret-files.tar -d
         - tar xvf secret-files.tar
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+
 after_success:
 - ls dist/*
 - ls -la
@@ -37,6 +38,7 @@ after_success:
       python setup.py sdist
   fi
 - twine upload --config-file .pypirc-bot dist/*
+
 before_install:
 - openssl aes-256-cbc -K $encrypted_721b3232adb3_key -iv $encrypted_721b3232adb3_iv -in secret-files.tar.enc -out secret-files.tar -d
 - tar xvf secret-files.tar

@@ -128,6 +128,10 @@ cdef class ParserEngine:
 
         self.parserHash = hashParserObject(self.parser)
 
+
+        if parser._buildOnlyCFiles:
+            self.buildLib()
+            return
         self.openCurrentLib()
 
     @staticmethod
@@ -666,7 +670,8 @@ cdef class ParserEngine:
         # os.remove(parser.flexHFile)
 
 
-
+        if parser._buildOnlyCFiles:
+            return
 
         # -----------------------------------------
         # Now compile the files into a shared lib

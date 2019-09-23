@@ -320,6 +320,14 @@ cdef class ParserEngine:
         else:
             export = "__attribute__ ((dllexport)) "
 
+
+        # define yyerror for reentrant/nonreentrant parser
+        if "%define api.pure full" in gOptions:
+            error_def = 'void yyerror(YYLTYPE *locp, yyscan_t scanner, char const *msg);'
+        else:
+            error_def = 'int yyerror(char *msg);'
+
+
         # grammar file prologue
         write('\n'.join([
             '%code top {',
@@ -353,6 +361,7 @@ cdef class ParserEngine:
             #'',
             #'YYLTYPE yylloc; /* location data */'
             '',
+            error_def,
             '}',
             '',
             '%locations',

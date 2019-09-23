@@ -1750,7 +1750,6 @@ static const char __pyx_k_code_top[] = "%code top {";
     static const char __pyx_k_buildOnlyCFiles[] = "_buildOnlyCFiles";
     static const char __pyx_k_int_last_column[] = "  int last_column;";
     static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
-    static const char __pyx_k_extern_FILE_yyin[] = "extern FILE *yyin;";
     static const char __pyx_k_hashParserObject[] = "hashParserObject";
     static const char __pyx_k_include_Python_h[] = "#include \"Python.h\"";
     static const char __pyx_k_include_tokens_h[] = "#include \"tokens.h\"";
@@ -1956,7 +1955,6 @@ static const char __pyx_k_code_top[] = "%code top {";
     static PyObject *__pyx_n_u_dynamic_lookup;
     static PyObject *__pyx_n_s_encode;
     static PyObject *__pyx_n_u_error;
-    static PyObject *__pyx_kp_u_extern_FILE_yyin;
     static PyObject *__pyx_n_s_extra_postargs;
     static PyObject *__pyx_n_s_extra_preargs;
     static PyObject *__pyx_n_s_f;
@@ -5251,7 +5249,7 @@ static PyObject *__pyx_pf_5bison_6bison__12ParserEngine_14buildLib(struct __pyx_
  *             '',
  */
   __Pyx_TraceLine(324,0,__PYX_ERR(0, 324, __pyx_L1_error))
-  __pyx_t_4 = PyList_New(32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 324, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(31); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF(__pyx_kp_u_code_top);
   __Pyx_GIVEREF(__pyx_kp_u_code_top);
@@ -5268,86 +5266,83 @@ static PyObject *__pyx_pf_5bison_6bison__12ParserEngine_14buildLib(struct __pyx_
   __Pyx_INCREF(__pyx_kp_u_include_Python_h);
   __Pyx_GIVEREF(__pyx_kp_u_include_Python_h);
   PyList_SET_ITEM(__pyx_t_4, 4, __pyx_kp_u_include_Python_h);
-  __Pyx_INCREF(__pyx_kp_u_extern_FILE_yyin);
-  __Pyx_GIVEREF(__pyx_kp_u_extern_FILE_yyin);
-  PyList_SET_ITEM(__pyx_t_4, 5, __pyx_kp_u_extern_FILE_yyin);
   __Pyx_INCREF(__pyx_kp_u_define_YYSTYPE_void);
   __Pyx_GIVEREF(__pyx_kp_u_define_YYSTYPE_void);
-  PyList_SET_ITEM(__pyx_t_4, 6, __pyx_kp_u_define_YYSTYPE_void);
+  PyList_SET_ITEM(__pyx_t_4, 5, __pyx_kp_u_define_YYSTYPE_void);
   __Pyx_INCREF(__pyx_kp_u_void_py_callback_void_char_int_i);
   __Pyx_GIVEREF(__pyx_kp_u_void_py_callback_void_char_int_i);
-  PyList_SET_ITEM(__pyx_t_4, 7, __pyx_kp_u_void_py_callback_void_char_int_i);
+  PyList_SET_ITEM(__pyx_t_4, 6, __pyx_kp_u_void_py_callback_void_char_int_i);
   __Pyx_INCREF(__pyx_kp_u_void_py_input_void_char_int_int);
   __Pyx_GIVEREF(__pyx_kp_u_void_py_input_void_char_int_int);
-  PyList_SET_ITEM(__pyx_t_4, 8, __pyx_kp_u_void_py_input_void_char_int_int);
+  PyList_SET_ITEM(__pyx_t_4, 7, __pyx_kp_u_void_py_input_void_char_int_int);
   __Pyx_INCREF(__pyx_kp_u_void_py_parser);
   __Pyx_GIVEREF(__pyx_kp_u_void_py_parser);
-  PyList_SET_ITEM(__pyx_t_4, 9, __pyx_kp_u_void_py_parser);
+  PyList_SET_ITEM(__pyx_t_4, 8, __pyx_kp_u_void_py_parser);
   __Pyx_GIVEREF(__pyx_t_5);
-  PyList_SET_ITEM(__pyx_t_4, 10, __pyx_t_5);
+  PyList_SET_ITEM(__pyx_t_4, 9, __pyx_t_5);
   __Pyx_INCREF(__pyx_kp_u_define_YYERROR_VERBOSE_1);
   __Pyx_GIVEREF(__pyx_kp_u_define_YYERROR_VERBOSE_1);
-  PyList_SET_ITEM(__pyx_t_4, 11, __pyx_kp_u_define_YYERROR_VERBOSE_1);
+  PyList_SET_ITEM(__pyx_t_4, 10, __pyx_kp_u_define_YYERROR_VERBOSE_1);
   __Pyx_INCREF(__pyx_kp_u__3);
   __Pyx_GIVEREF(__pyx_kp_u__3);
-  PyList_SET_ITEM(__pyx_t_4, 12, __pyx_kp_u__3);
+  PyList_SET_ITEM(__pyx_t_4, 11, __pyx_kp_u__3);
   __Pyx_INCREF(__pyx_kp_u__15);
   __Pyx_GIVEREF(__pyx_kp_u__15);
-  PyList_SET_ITEM(__pyx_t_4, 13, __pyx_kp_u__15);
+  PyList_SET_ITEM(__pyx_t_4, 12, __pyx_kp_u__15);
   __Pyx_INCREF(__pyx_kp_u__3);
   __Pyx_GIVEREF(__pyx_kp_u__3);
-  PyList_SET_ITEM(__pyx_t_4, 14, __pyx_kp_u__3);
+  PyList_SET_ITEM(__pyx_t_4, 13, __pyx_kp_u__3);
   __Pyx_INCREF(__pyx_kp_u_code_requires);
   __Pyx_GIVEREF(__pyx_kp_u_code_requires);
-  PyList_SET_ITEM(__pyx_t_4, 15, __pyx_kp_u_code_requires);
+  PyList_SET_ITEM(__pyx_t_4, 14, __pyx_kp_u_code_requires);
   __Pyx_INCREF(__pyx_kp_u__3);
   __Pyx_GIVEREF(__pyx_kp_u__3);
-  PyList_SET_ITEM(__pyx_t_4, 16, __pyx_kp_u__3);
+  PyList_SET_ITEM(__pyx_t_4, 15, __pyx_kp_u__3);
   __Pyx_INCREF(__pyx_kp_u_typedef_void_yyscan_t);
   __Pyx_GIVEREF(__pyx_kp_u_typedef_void_yyscan_t);
-  PyList_SET_ITEM(__pyx_t_4, 17, __pyx_kp_u_typedef_void_yyscan_t);
+  PyList_SET_ITEM(__pyx_t_4, 16, __pyx_kp_u_typedef_void_yyscan_t);
   __Pyx_INCREF(__pyx_kp_u_define_YYLTYPE_YYLTYPE);
   __Pyx_GIVEREF(__pyx_kp_u_define_YYLTYPE_YYLTYPE);
-  PyList_SET_ITEM(__pyx_t_4, 18, __pyx_kp_u_define_YYLTYPE_YYLTYPE);
+  PyList_SET_ITEM(__pyx_t_4, 17, __pyx_kp_u_define_YYLTYPE_YYLTYPE);
   __Pyx_INCREF(__pyx_kp_u_typedef_struct_YYLTYPE);
   __Pyx_GIVEREF(__pyx_kp_u_typedef_struct_YYLTYPE);
-  PyList_SET_ITEM(__pyx_t_4, 19, __pyx_kp_u_typedef_struct_YYLTYPE);
+  PyList_SET_ITEM(__pyx_t_4, 18, __pyx_kp_u_typedef_struct_YYLTYPE);
   __Pyx_INCREF(__pyx_kp_u__16);
   __Pyx_GIVEREF(__pyx_kp_u__16);
-  PyList_SET_ITEM(__pyx_t_4, 20, __pyx_kp_u__16);
+  PyList_SET_ITEM(__pyx_t_4, 19, __pyx_kp_u__16);
   __Pyx_INCREF(__pyx_kp_u_int_first_line);
   __Pyx_GIVEREF(__pyx_kp_u_int_first_line);
-  PyList_SET_ITEM(__pyx_t_4, 21, __pyx_kp_u_int_first_line);
+  PyList_SET_ITEM(__pyx_t_4, 20, __pyx_kp_u_int_first_line);
   __Pyx_INCREF(__pyx_kp_u_int_first_column);
   __Pyx_GIVEREF(__pyx_kp_u_int_first_column);
-  PyList_SET_ITEM(__pyx_t_4, 22, __pyx_kp_u_int_first_column);
+  PyList_SET_ITEM(__pyx_t_4, 21, __pyx_kp_u_int_first_column);
   __Pyx_INCREF(__pyx_kp_u_int_last_line);
   __Pyx_GIVEREF(__pyx_kp_u_int_last_line);
-  PyList_SET_ITEM(__pyx_t_4, 23, __pyx_kp_u_int_last_line);
+  PyList_SET_ITEM(__pyx_t_4, 22, __pyx_kp_u_int_last_line);
   __Pyx_INCREF(__pyx_kp_u_int_last_column);
   __Pyx_GIVEREF(__pyx_kp_u_int_last_column);
-  PyList_SET_ITEM(__pyx_t_4, 24, __pyx_kp_u_int_last_column);
+  PyList_SET_ITEM(__pyx_t_4, 23, __pyx_kp_u_int_last_column);
   __Pyx_INCREF(__pyx_kp_u_char_filename);
   __Pyx_GIVEREF(__pyx_kp_u_char_filename);
-  PyList_SET_ITEM(__pyx_t_4, 25, __pyx_kp_u_char_filename);
+  PyList_SET_ITEM(__pyx_t_4, 24, __pyx_kp_u_char_filename);
   __Pyx_INCREF(__pyx_kp_u_YYLTYPE);
   __Pyx_GIVEREF(__pyx_kp_u_YYLTYPE);
-  PyList_SET_ITEM(__pyx_t_4, 26, __pyx_kp_u_YYLTYPE);
+  PyList_SET_ITEM(__pyx_t_4, 25, __pyx_kp_u_YYLTYPE);
   __Pyx_INCREF(__pyx_kp_u__3);
   __Pyx_GIVEREF(__pyx_kp_u__3);
-  PyList_SET_ITEM(__pyx_t_4, 27, __pyx_kp_u__3);
+  PyList_SET_ITEM(__pyx_t_4, 26, __pyx_kp_u__3);
   __Pyx_INCREF(__pyx_kp_u__15);
   __Pyx_GIVEREF(__pyx_kp_u__15);
-  PyList_SET_ITEM(__pyx_t_4, 28, __pyx_kp_u__15);
+  PyList_SET_ITEM(__pyx_t_4, 27, __pyx_kp_u__15);
   __Pyx_INCREF(__pyx_kp_u__3);
   __Pyx_GIVEREF(__pyx_kp_u__3);
-  PyList_SET_ITEM(__pyx_t_4, 29, __pyx_kp_u__3);
+  PyList_SET_ITEM(__pyx_t_4, 28, __pyx_kp_u__3);
   __Pyx_INCREF(__pyx_kp_u_locations);
   __Pyx_GIVEREF(__pyx_kp_u_locations);
-  PyList_SET_ITEM(__pyx_t_4, 30, __pyx_kp_u_locations);
+  PyList_SET_ITEM(__pyx_t_4, 29, __pyx_kp_u_locations);
   __Pyx_INCREF(__pyx_kp_u__3);
   __Pyx_GIVEREF(__pyx_kp_u__3);
-  PyList_SET_ITEM(__pyx_t_4, 31, __pyx_kp_u__3);
+  PyList_SET_ITEM(__pyx_t_4, 30, __pyx_kp_u__3);
   __pyx_t_5 = 0;
   __pyx_t_5 = PyUnicode_Join(__pyx_kp_u__14, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
@@ -14885,7 +14880,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_u_dynamic_lookup, __pyx_k_dynamic_lookup, sizeof(__pyx_k_dynamic_lookup), 0, 1, 0, 1},
   {&__pyx_n_s_encode, __pyx_k_encode, sizeof(__pyx_k_encode), 0, 0, 1, 1},
   {&__pyx_n_u_error, __pyx_k_error, sizeof(__pyx_k_error), 0, 1, 0, 1},
-  {&__pyx_kp_u_extern_FILE_yyin, __pyx_k_extern_FILE_yyin, sizeof(__pyx_k_extern_FILE_yyin), 0, 1, 0, 0},
   {&__pyx_n_s_extra_postargs, __pyx_k_extra_postargs, sizeof(__pyx_k_extra_postargs), 0, 0, 1, 1},
   {&__pyx_n_s_extra_preargs, __pyx_k_extra_preargs, sizeof(__pyx_k_extra_preargs), 0, 0, 1, 1},
   {&__pyx_n_s_f, __pyx_k_f, sizeof(__pyx_k_f), 0, 0, 1, 1},

@@ -327,7 +327,6 @@ cdef class ParserEngine:
             '#include "tokens.h"',
             '#include "tmp.lex.h"',
             '#include "Python.h"',
-            'extern FILE *yyin;',
             # '' if sys.platform == 'win32' else 'extern int yylineno;'
             '#define YYSTYPE void*',
             #'extern void *py_callback(void *, char *, int, void*, ...);',

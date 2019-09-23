@@ -37,13 +37,12 @@ from .bison_ import ParserEngine
 from .node import BisonNode
 from .convert import bisonToPython
 
-WIN_FLEX = join(dirname(__file__),
-                'winflexbison', 'win_flex.exe')
-WIN_BISON = join(dirname(__file__),
-                 'winflexbison', 'win_bison.exe')
+WIN_CHOCO_DIR = "C:\\ProgramData\\chocolatey\\lib\\winflexbison3\\tools\\"
+WIN_FLEX = join( WIN_CHOCO_DIR, 'win_flex.exe')
+WIN_BISON = join( WIN_CHOCO_DIR, 'win_bison.exe')
 
 
-__version__ = '0.2.7-1'
+__version__ = '0.2.7-2'
 __uri__ = 'https://github.com/lukeparser/pybison'
 __author__ = 'David McNab'
 __maintainer__ = 'Lukeparser Team'

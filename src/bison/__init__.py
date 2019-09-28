@@ -42,7 +42,7 @@ WIN_FLEX = join( WIN_CHOCO_DIR, 'win_flex.exe')
 WIN_BISON = join( WIN_CHOCO_DIR, 'win_bison.exe')
 
 
-__version__ = '0.2.7-4'
+__version__ = '0.2.7-6'
 __uri__ = 'https://github.com/lukeparser/pybison'
 __author__ = 'David McNab'
 __maintainer__ = 'Lukeparser Team'
@@ -395,7 +395,7 @@ class BisonParser(object):
         if self.verbose:
             print('Parser.read: want %s bytes' % nbytes)
 
-        _bytes = self.file.readline(nbytes)
+        _bytes = self.file.readline(nbytes).replace(b'\r\n', b'\n').replace(b'\r', b'\n')
 
         if self.verbose:
             print('Parser.read: got %s bytes' % len(_bytes))

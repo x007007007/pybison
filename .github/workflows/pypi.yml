@@ -34,7 +34,7 @@ jobs:
   deploy:
     name: Deploy to PyPI
     runs-on: ubuntu-latest
-    needs: [auto-tag, build-src, build-manylinux, build-macos, build-windows]
+    needs: [auto-tag, build-manylinux, build-macos, build-windows]
     if: ${{ needs.auto-tag.outputs.sha }}
     steps:
       - name: Download all the dists
@@ -52,6 +52,7 @@ jobs:
   build-src:
     name: sdist
     runs-on: ubuntu-latest
+    needs: [auto-tag]
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -67,15 +68,17 @@ jobs:
       run: python setup.py sdist
     - name: List builds
       run: ls -la ./dist/
-    - name: Store sdist package
-      uses: actions/upload-artifact@v2
+    - name: Publish to PyPI
+      if: ${{ needs.auto-tag.outputs.sha }}
+      uses: pypa/gh-action-pypi-publish@master
       with:
-        name: python-package-distributions
-        path: dist
+        user: __token__
+        password: ${{ secrets.PYPI_PASSWORD }}
 
   build-manylinux:
     name: manylinux (${{ matrix.pep-425-tag }})
     runs-on: ubuntu-latest
+    needs: [build-src]
     strategy:
       fail-fast: false
       matrix:
@@ -118,6 +121,7 @@ jobs:
   build-macos:
     name: macOS (py${{ matrix.python-version }})
     runs-on: macos-latest
+    needs: [build-src]
     strategy:
       fail-fast: false
       matrix:
@@ -147,6 +151,7 @@ jobs:
   build-windows:
     name: Windows (py${{ matrix.python-version }})
     runs-on: windows-latest
+    needs: [build-src]
     strategy:
       fail-fast: false
       matrix:

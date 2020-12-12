@@ -116,7 +116,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: python-package-distributions
-          path: dist
+          path: dist/*-manylinux*.whl
 
   build-macos:
     name: macOS (py${{ matrix.python-version }})

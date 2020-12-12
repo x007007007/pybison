@@ -46,8 +46,9 @@ jobs:
         continue-on-error: true
         uses: pypa/gh-action-pypi-publish@master
         with:
-            user: __token__
-            password: ${{ secrets.PYPI_PASSWORD }}
+          skip_existing: true
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}
 
   build-src:
     name: sdist
@@ -72,6 +73,7 @@ jobs:
       if: ${{ needs.auto-tag.outputs.sha }}
       uses: pypa/gh-action-pypi-publish@master
       with:
+        skip_existing: true
         user: __token__
         password: ${{ secrets.PYPI_PASSWORD }}
 

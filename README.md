@@ -42,7 +42,7 @@ The other frameworks utilise a fiddly script syntax -
 
 ## How do I use this?
 
-Refer to the [examples](examples) and the [docs](doc) for usage.
+Refer to the [examples](https://github.com/lukeparser/pybison/tree/master/examples) and the [docs](https://github.com/lukeparser/pybison/tree/master/doc) for usage.
 
 ## Development
 You will need:

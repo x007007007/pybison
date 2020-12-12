@@ -21,7 +21,9 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           source_file: "src/bison/__init__.py"
-          extraction_regex: "__version__\\s*=\\s*\"(\\d[\\d\\.]+)\""
+          # this is the semver regex https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+          # with an additional capture group (around everything) and double escape's
+          extraction_regex: "__version__\\s*=\\s*((0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?)"
           tag_message: "Release"
           tag_format: "v{version}"
       - name: Show version
@@ -62,7 +64,7 @@ jobs:
     - name: Build sdist
       run: python setup.py sdist
     - name: List builds
-      run: la -la ./dist/
+      run: ls -la ./dist/
     - name: Store sdist package
       uses: actions/upload-artifact@v2
       with:
@@ -104,7 +106,7 @@ jobs:
           build-requirements: 'six Cython'
           system-packages: 'atlas-devel'
       - name: List builds
-        run: la -la ./dist/
+        run: ls -la ./dist/
       - name: Store ${{ matrix.pep-425-tag }} wheel
         uses: actions/upload-artifact@v2
         with:
@@ -133,7 +135,7 @@ jobs:
       - name: Build wheel for ${{ matrix.python-version }} on macOS
         run: python setup.py bdist_wheel
       - name: List builds
-        run: la -la ./dist/
+        run: ls -la ./dist/
       - name: Store macOS (py${{ matrix.python-version }}) wheel
         uses: actions/upload-artifact@v2
         with:
@@ -162,7 +164,7 @@ jobs:
       - name: Build wheel for ${{ matrix.python-version }} on Windows
         run: python setup.py bdist_wheel
       - name: List builds
-        run: la -la ./dist/
+        run: ls -la ./dist/
       - name: Store Windows (py${{ matrix.python-version }}) wheel
         uses: actions/upload-artifact@v2
         with:

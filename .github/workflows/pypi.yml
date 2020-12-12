@@ -43,7 +43,6 @@ jobs:
           name: python-package-distributions
           path: dist/
       - name: Publish to PyPI
-        continue-on-error: true
         uses: pypa/gh-action-pypi-publish@master
         with:
           skip_existing: true

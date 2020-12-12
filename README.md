@@ -1,6 +1,7 @@
 # PyBison
-![python-3 badge](https://img.shields.io/badge/python-3-brightgreen.svg)
-![Build](https://github.com/lukeparser/pybison/workflows/Build/badge.svg)
+[![python versions](https://img.shields.io/pypi/pyversions/pybison)](https://github.com/lukeparser/pybison)
+[![wheel](https://img.shields.io/pypi/wheel/pybison)](https://github.com/lukeparser/pybison)
+[![Build](https://github.com/lukeparser/pybison/workflows/Build/badge.svg)](https://github.com/lukeparser/pybison)
 
 Welcome to PyBison!  
 Bringing **GNU Bison/Flex**'s raw speed and power to Python  

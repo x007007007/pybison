@@ -22,8 +22,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           source_file: "src/bison/__init__.py"
           # this is the semver regex https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-          # with an additional capture group (around everything), double escape's and surrounding ticks
-          extraction_regex: "__version__\\s*=\\s*[\\'\"]((0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?)[\\'\"]"
+          # with an capture group (around everything), but all other groups are non capturing
+          # double escape's where necessary
+          extraction_regex: "__version__\\s*=\\s*[\\'\"]((?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?:[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?)[\\'\"]"
           tag_message: "Release"
           tag_format: "v{version}"
       - name: Show version
@@ -164,7 +165,7 @@ jobs:
       - name: Build wheel for ${{ matrix.python-version }} on Windows
         run: python setup.py bdist_wheel
       - name: List builds
-        run: ls -la ./dist/
+        run: dir dist
       - name: Store Windows (py${{ matrix.python-version }}) wheel
         uses: actions/upload-artifact@v2
         with:

@@ -7,6 +7,27 @@ on:
 
 jobs:
 
+  auto-tag:
+    name: Add release tag
+    runs-on: ubuntu-latest
+    outputs:
+      autotag.sha: ${{ steps.autotag.outputs.tagsha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Autoadd release Tags
+        uses: jaliborc/action-general-autotag@7d2ae9f
+        id:   autotag
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          source_file: "src/bison/__init__.py"
+          extraction_regex: "__version__\\s*=\\s*\"(\\d[\\d\\.]+)\""
+          tag_message: "Release"
+          tag_format: "v{version}"
+      - name: Show version
+        if: steps.autotag.outputs.tagsha
+        run: echo ${{ steps.autotg.outputs.tagsha }}
+
   deploy:
     name: Deploy to PyPI
     runs-on: ubuntu-latest
@@ -40,6 +61,8 @@ jobs:
         pip install -r requirements.txt
     - name: Build sdist
       run: python setup.py sdist
+    - name: List builds
+      run: la -la ./dist/
     - name: Store sdist package
       uses: actions/upload-artifact@v2
       with:
@@ -80,6 +103,8 @@ jobs:
           python-versions: ${{ matrix.pep-425-tag }}
           build-requirements: 'six Cython'
           system-packages: 'atlas-devel'
+      - name: List builds
+        run: la -la ./dist/
       - name: Store ${{ matrix.pep-425-tag }} wheel
         uses: actions/upload-artifact@v2
         with:
@@ -107,6 +132,8 @@ jobs:
           pip install wheel setuptools
       - name: Build wheel for ${{ matrix.python-version }} on macOS
         run: python setup.py bdist_wheel
+      - name: List builds
+        run: la -la ./dist/
       - name: Store macOS (py${{ matrix.python-version }}) wheel
         uses: actions/upload-artifact@v2
         with:
@@ -134,6 +161,8 @@ jobs:
           pip install wheel setuptools
       - name: Build wheel for ${{ matrix.python-version }} on Windows
         run: python setup.py bdist_wheel
+      - name: List builds
+        run: la -la ./dist/
       - name: Store Windows (py${{ matrix.python-version }}) wheel
         uses: actions/upload-artifact@v2
         with:

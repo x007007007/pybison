@@ -76,12 +76,11 @@ class BisonParser(object):
     raw_c_rules = ''
 
     # Command and options for running yacc/bison, except for filename arg
-    bisonCmd = []
+    bisonCmd = ['bison']
     if sys.platform == 'win32':
-        bisonCmd = [WIN_BISON, '-d', '-v', '-t']
-    else:
-        bisonCmd.append('bison')
-        bisonCmd = ['bison', '-d', '-v', '-t']
+        bisonCmd = [WIN_BISON]
+    # add bison args
+    bisonCmd += ['-d', '-v', '-t']
 
     bisonFile = 'tmp.y'
     bisonCFile = 'tmp.tab.c'
@@ -90,26 +89,24 @@ class BisonParser(object):
     bisonHFile = 'tmp.tab.h'
 
     # C output file from bison gets renamed to this.
-    bisonCFile1 = 'tmp.bison.c'
-
+    bisonCFile1 = bisonCFile  # 'tmp.bison.c'
     # Bison-generated header file gets renamed to this.
-    bisonHFile1 = 'tokens.h'
+    bisonHFile1 = bisonHFile  # 'tokens.h'
 
-    # command and options for running [f]lex, except for filename arg.
-    flexCmd = []
-    if sys.platform == 'win32':
-        # flexCmd.append('-DYY_NO_UNISTD_H=false')
-        flexCmd = [WIN_FLEX, '--wincompat']
-    else:
-        flexCmd = ['flex']
-
+    # flex file names
     flexFile = 'tmp.l'
     flexCFile = 'lex.yy.c'
     flexHFile = 'lex.yy.h'
+    # command and options for running [f]lex, except for filename arg.
+    flexCmd = ['flex']
+    if sys.platform == 'win32':
+        # flexCmd.append('-DYY_NO_UNISTD_H=false')
+        flexCmd = [WIN_FLEX, '--wincompat']
+    flexCmd += ['-v', '--header-file="{}"'.format(flexHFile)]
 
     # C output file from flex gets renamed to this.
-    flexCFile1 = 'tmp.lex.c'
-    flexHFile1 = 'tmp.lex.h'
+    flexCFile1 = flexCFile  # 'tmp.lex.c'
+    flexHFile1 = flexHFile  # 'tmp.lex.h'
 
     # CFLAGS added before all command line arguments.
     cflags_pre = ['-fPIC'] if sys.platform.startswith('linux') else []

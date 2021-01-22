@@ -41,8 +41,7 @@ class Parser(BisonParser):
 #include <stdio.h>
 #include <string.h>
 #include "Python.h"
-#define YYSTYPE void *
-#include "tokens.h"
+#include "tmp.tab.h"
 int yycolumn = 1;
 int yywrap() { return(1); }
 extern void *py_parser;
@@ -168,7 +167,7 @@ class JSONParser(Parser):
 if __name__ == '__main__':
 
     start = time.time()
-    j = JSONParser(verbose=False, debugSymbols=False)
+    j = JSONParser(verbose=True, debugSymbols=False)
     duration = time.time() - start
     print('instantiate parser', duration)
 
@@ -178,12 +177,12 @@ if __name__ == '__main__':
     with open(file) as fh:
         result_json = json.load(fh)
     duration = time.time() - start
-    print('json', duration)
+    print('json {}'.format(duration))
 
     start = time.time()
     result_bison = j.run(file=file, debug=0)
     duration = time.time() - start
-    print('bison-based JSONParser', duration)
-    print('result equal to json:', result_json == result_bison)
+    print('bison-based JSONParser {}'.format(duration))
+    print('result equal to json: {}'.format(result_json == result_bison))
 
     print('filesize: {} kB'.format(os.stat(file).st_size / 1024))

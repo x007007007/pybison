@@ -382,7 +382,6 @@ class BisonParser(object):
         while not self.marker:
             # do the parsing job, spew if error
             self.engine.reset()
-
             try:
                 self.engine.runEngine(debug)
             except Exception as e:
@@ -435,7 +434,6 @@ class BisonParser(object):
             LOGGER.info('Parser.read: want %s bytes' % nbytes)
 
         _bytes = self.file.readline(nbytes).replace(b'\r\n', b'\n').replace(b'\r', b'\n')
-
         if self.verbose:
             LOGGER.info('Parser.read: got %s bytes' % len(_bytes))
             LOGGER.info(_bytes)

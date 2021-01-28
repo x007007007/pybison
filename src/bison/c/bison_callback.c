@@ -25,7 +25,7 @@
  */
 
 #include "Python.h"
-
+#include <stdlib.h>
 #if PY_MAJOR_VERSION >= 3
 #define PY3
 #endif
@@ -33,6 +33,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "log.h"
+
 
 #ifdef _WIN32
 #define likely(x)       (x)
@@ -58,14 +60,24 @@ static PyObject *py_attr_close_name;
 #define INIT_ATTR(variable, name, failure) \
     if (unlikely(!variable)) { \
         variable = PyUnicode_FromString(name); \
-        if (!variable) failure; \
+        if (!variable) {    \
+            DEBUG_PRINT("init attr failed %s exit\n", name);    \
+            failure;    \
+        }   \
+        DEBUG_PRINT("init attr success %s: %p\n", name, variable);      \
     }
+#define PyComStr_FromString(name) PyUnicode_FromString(name)
 #else
 #define INIT_ATTR(variable, name, failure) \
     if (unlikely(!variable)) { \
         variable = PyString_FromString(name); \
-        if (!variable) failure; \
+        if (!variable) {    \
+            DEBUG_PRINT("init attr failed %s exit\n", name);    \
+            failure;    \
+        }   \
+        DEBUG_PRINT("init attr success %s: %p\n", name, variable); \
     }
+#define PyComStr_FromString(name) PyString_FromString(name)
 #endif
 
 #define debug_refcnt(variable, count) { \
@@ -81,34 +93,39 @@ static PyObject *py_attr_close_name;
 PyObject* py_callback(PyObject *parser, char *target, int option, int nargs, ...) {
     va_list ap;
     int i;
-
     PyObject *res;
-
     PyObject *names = PyList_New(nargs),
         *values = PyList_New(nargs);
 
     va_start(ap, nargs);
+    DEBUG_PRINT("py_callback 3\n");
 
     // Construct the names and values list from the variable argument list.
     for(i = 0; i < nargs; i++) {
-      #ifdef PY3
-        PyObject *name = PyUnicode_FromString(va_arg(ap, char *));
-      #else
-        PyObject *name = PyString_FromString(va_arg(ap, char *));
-      #endif
+        DEBUG_PRINT("py_callback for loop: %d / %d \n", nargs, i);
+        char *name_c_str = va_arg(ap, char *);
+        PyObject *name = PyComStr_FromString(name_c_str);
+
         if(!name){
-          Py_INCREF(Py_None);
-          name = Py_None;
+            DEBUG_PRINT("no name\n");
+            Py_INCREF(Py_None);
+            name = Py_None;
+        } else {
+            DEBUG_PRINT("name: %s\n", name_c_str);
         }
         PyList_SetItem(names, i, name);
+        DEBUG_PRINT("push name into names\n");
 
-        PyObject *value = va_arg(ap, PyObject *);
-        if(!value){
-          Py_INCREF(Py_None);
-          value = Py_None;
-        }
-        Py_INCREF(value);
-        PyList_SetItem(values, i, value);
+//        PyObject *value = va_arg(ap, PyObject *);
+//        DEBUG_PRINT("read stack\n");
+//        if(!value){
+//          Py_INCREF(Py_None);
+//          value = Py_None;
+//        }
+//        Py_INCREF(value);
+//        DEBUG_PRINT("Py incref value\n");
+//        PyList_SetItem(values, i, value);
+//        DEBUG_PRINT("callback done\n");
     }
 
     va_end(ap);
@@ -122,7 +139,11 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs, ...
     if (unlikely(!handle)) return NULL;
 
     PyObject *arglist = Py_BuildValue("(siOO)", target, option, names, values);
-    if (unlikely(!arglist)) { Py_DECREF(handle); return NULL; }
+    if (unlikely(!arglist)) {
+        DEBUG_PRINT("is not a arglist\n");
+        Py_DECREF(handle);
+        return NULL;
+    }
 
     res = PyObject_CallObject(handle, arglist);
 
@@ -135,6 +156,7 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs, ...
     handle = PyObject_GetAttr(parser, py_attr_hook_handler_name);
 
     if (!handle) {
+        DEBUG_PRINT("Py Error Clear\n");
         PyErr_Clear();
         return res;
     }
@@ -151,8 +173,9 @@ PyObject* py_callback(PyObject *parser, char *target, int option, int nargs, ...
 
     PyObject *exc = PyErr_Occurred();
     if(unlikely(exc)){
-      printf("exception in callback!!\n");
-      return -1;
+      DEBUG_PRINT(" %p", exc);
+      DEBUG_PRINT("exception in callback!!\n");
+      return NULL;
     }
     Py_DECREF(handle);
     Py_DECREF(arglist);
@@ -172,8 +195,8 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size) {
     INIT_ATTR(py_attr_close_name, "close", return);
 
     // Check if the "hook_READ_BEFORE" callback exists
-    if (PyObject_HasAttr(parser, py_attr_hook_read_before_name))
-    {
+    if (PyObject_HasAttr(parser, py_attr_hook_read_before_name)) {
+        DEBUG_PRINT("parase has attr py_attr_hook_read_before_name %p\n", py_attr_hook_read_before_name);
         handle = PyObject_GetAttr(parser, py_attr_hook_read_before_name);
         if (unlikely(!handle)) return;
 
@@ -191,6 +214,7 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size) {
 
     // Read the input string and catch keyboard interrupt exceptions.
     handle = PyObject_GetAttr(parser, py_attr_read_name);
+    DEBUG_PRINT("PyObject_GetAttr %p\n", handle);
     if (unlikely(!handle)) return;
 
     arglist = Py_BuildValue("(i)", max_size);
@@ -198,28 +222,35 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size) {
 
     res = PyObject_CallObject(handle, arglist);
 
+
+    DEBUG_PRINT("Py_DECREF start %p\n", handle);
+    DEBUG_PRINT("Py_DECREF start %p\n", arglist);
     Py_DECREF(handle);
     Py_DECREF(arglist);
+    DEBUG_PRINT("Py_DECREF end\n");
 
     if (unlikely(!res)) {
         // Catch and reset KeyboardInterrupt exception
         PyObject *given = PyErr_Occurred();
         if (given && PyErr_GivenExceptionMatches(given, PyExc_KeyboardInterrupt)) {
+            DEBUG_PRINT("PyErr_GivenExceptionMatches given: %p\n", given);
             PyErr_Clear();
         }
-
         return;
     }
 
     // Check if the "hook_read_after" callback exists
-    if (unlikely(!PyObject_HasAttr(parser, py_attr_hook_read_after_name)))
+    if (unlikely(!PyObject_HasAttr(parser, py_attr_hook_read_after_name))) {
+        DEBUG_PRINT("goto finish input \n");
         goto finish_input;
+    }
 
     handle = PyObject_GetAttr(parser, py_attr_hook_read_after_name);
     if (unlikely(!handle)) return;
 
     // Call the "hook_READ_AFTER" callback
     arglist = Py_BuildValue("(O)", res);
+
     if (unlikely(!arglist)) { Py_DECREF(handle); return; }
 
     res = PyObject_CallObject(handle, arglist);
@@ -231,17 +262,19 @@ void py_input(PyObject *parser, char *buf, int *result, int max_size) {
     if (unlikely(!res)) return;
 
 finish_input:
-
+    DEBUG_PRINT("Jump point:finish_input \n");
     // Copy the read python input string to the buffer
     #ifdef PY3
-    bufstr = PyBytes_AsString(res);
+        bufstr = PyBytes_AsString(res);
     #else
-    bufstr = PyString_AsString(res);
+        bufstr = PyString_AsString(res);
     #endif
 
     if(!bufstr){
+      DEBUG_PRINT("buf str alloc failed \n");
       return;
     }
+    printf("bufstr : %s\n", bufstr);
     *result = strlen(bufstr);
     memcpy(buf, bufstr, *result);
 
@@ -250,6 +283,7 @@ finish_input:
     // associated C stream (which is not necessary here, otherwise use
     // "os.close(0)").
     if (!*result && PyObject_HasAttr(parser, py_attr_file_name)) {
+        DEBUG_PRINT("hi\n");
         // don't mark the file as closed
         // set a marker that there is no more input
         PyObject *marker_handle = PyObject_GetAttr(parser, py_attr_input_marker);
@@ -267,4 +301,5 @@ finish_input:
         if (unlikely(!res)) return;
         Py_XDECREF(res);
     }
+    DEBUG_PRINT("input done\n");
 }

@@ -777,12 +777,13 @@ cdef class ParserEngine:
 
         cbvoid = <void *>py_callback
         invoid = <void *>py_input
-
+        LOGGER.debug("debug !!!!!!!!!!!!!!!!!!")
+        # (void *handle, PyObject *parser, void *cb, void *in, int debug)
         try:
             ret = bisondynlib_run(handle, parser, cbvoid, invoid, debug)
         except Exception as e:
+            LOGGER.error(f"error: {e}")
             ret=None
-
         return ret
 
     def __del__(self):
